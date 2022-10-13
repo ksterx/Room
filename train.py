@@ -1,13 +1,18 @@
+from typing import Union
+
 import hydra
 import wandb
-from models import create_model
+
+# from models import create_model
 from omegaconf import DictConfig, OmegaConf
 from stable_baselines3.common.monitor import Monitor
 
+from room import logger
+from room.training import agents, trainers
 
-@hydra.main(config_path="./config", config_name="train_config", version_base=None)
+
+@hydra.main(config_path="./config", config_name="config", version_base=None)
 def main(cfg: DictConfig) -> None:
-    print(OmegaConf.to_yaml(cfg))
     run_name = cfg.wandb_name
     cfg_dict = OmegaConf.to_container(cfg)
     if cfg.wandb_log:
@@ -19,7 +24,8 @@ def main(cfg: DictConfig) -> None:
             name=run_name,
         )
 
-    print("Starting training...")
+    logger.info("Starting training...")
+
     trainer = Trainer(env_name=cfg.env_name, model_name=cfg.model_name)
     trainer.run()
 
