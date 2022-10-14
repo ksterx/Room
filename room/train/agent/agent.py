@@ -15,3 +15,28 @@ class Agent(ABC):
 
     def log(self):
         pass
+
+
+class OnPolicyAgent(Agent):
+    def __init__(self, obs_space, act_space, cfg):
+        super().__init__(obs_space, act_space, cfg)
+        self.memory = Memory()
+
+    @abstractmethod
+    def update(self):
+        pass
+
+    def log(self):
+        pass
+
+
+class OffPolicyAgent(Agent):
+    def __init__(self, obs_space, act_space, cfg):
+        super().__init__(obs_space, act_space, cfg)
+
+    @abstractmethod
+    def update(self):
+        pass
+
+    def log(self):
+        pass

@@ -1,8 +1,8 @@
 import torch
-from room.train.agent import Agent
+from room.train.agent import OnPolicyAgent
 
 
-class PPO(Agent):
+class PPO(OnPolicyAgent):
     def __init__(self, env, args):
         super().__init__(env, args)
         self.actor = Actor(env, args)
@@ -61,3 +61,6 @@ class PPO(Agent):
             if done:
                 self.episodes += 1
                 self.writer.add_scalar("train/score", score, self.episodes)
+
+    def act(self):
+        NotImplemented

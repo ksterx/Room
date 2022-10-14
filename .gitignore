@@ -163,5 +163,5 @@ venv.bak/
 .vscode/
 .Trash-*/
 
-playground.ipynb
+/*.ipynb
 outputs/

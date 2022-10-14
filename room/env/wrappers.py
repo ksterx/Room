@@ -101,6 +101,9 @@ class GymEnvWrapper(EnvWrapper):
             raise NotImplementedError("OpenAI Gym's new API is not yet supported")
             # TODO: Implement new API
 
+    def reset(self) -> torch.Tensor:
+        NotImplemented  # TODO
+
     def step(self, actions: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, Any]:
         if self.is_vectorized:
             obs, reward, done, info = self.env.step(actions)
@@ -112,6 +115,12 @@ class GymEnvWrapper(EnvWrapper):
             torch.tensor(done, device=self.device),
             info,
         )
+
+    def render(self) -> None:
+        NotImplemented
+
+    def close(self) -> None:
+        NotImplemented
 
     @property
     def observation_space(self) -> gym.Space:
