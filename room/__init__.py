@@ -20,12 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
 import logging
 import os
 
 __all__ = ["__version__", "logger"]
-
 
 # read library version from file
 path = os.path.join(os.path.dirname(__file__), "version.txt")

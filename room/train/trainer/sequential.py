@@ -1,6 +1,6 @@
 from typing import Union
 
-from .base import Trainer
+from room.train.trainer.trainer import Trainer
 
 
 class SequentialTrainer(Trainer):
@@ -8,7 +8,7 @@ class SequentialTrainer(Trainer):
         super().__init__(env, agents, cfg)
 
     def train(self):
-        pass
+        super.train()
 
     def eval(self):
         pass
