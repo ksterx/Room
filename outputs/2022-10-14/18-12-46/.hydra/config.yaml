@@ -1,5 +1,0 @@
-log_metrics: true
-debug: true
-run_name: debug
-env_name: surgery
-agent_name: ppo
