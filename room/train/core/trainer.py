@@ -2,13 +2,21 @@ from abc import ABC, abstractmethod
 from typing import List, Union
 
 from room import logger
-from room.env.wrappers import EnvWrapper
+from room.envs.wrappers import EnvWrapper
+from room.train.core import Logger
 
-from ..agent import Agent
+from ..agents import Agent
 
 
 class Trainer(ABC):
-    def __init__(self, env: EnvWrapper, agents: Union[Agent, List[Agent]], cfg):
+    def __init__(
+        self,
+        env: EnvWrapper,
+        agents: Union[Agent, List[Agent]],
+        logger: Logger = None,
+        cfg: dict = None,
+        callbacks: List = None,
+    ):
         """Reinforcement learning trainer.
 
         Args:
@@ -19,6 +27,7 @@ class Trainer(ABC):
         """
         self.env = env
         self.agents = agents
+        self.logger = logger
         self.cfg = cfg
 
         # Set up agents
@@ -32,19 +41,21 @@ class Trainer(ABC):
             return 1
 
     @abstractmethod
-    def train(self):
+    def train(self) -> None:
+        """Execute training loop
 
-        # Set up experiment logger
-        if not self.cfg.log_metrics:
-            logger.warning("Experiment logger is not active")
-        elif self.cfg.log_metrics and not self.cfg.debug:
-            logger.info("Experiment logger is active")
-            import mlflow
+        This method should be called before training loop is executed in the subclass.
+        """
 
-            mlflow.start_run(run_name=self.cfg.run_name)
+        if not self.logger:
+            logger.warning("No logger is set")
 
     @abstractmethod
     def eval(self):
+
+        if not self.logger:
+            logger.warning("No logger is set")
+
         logger.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
         quit()
 

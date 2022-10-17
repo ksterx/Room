@@ -3,3 +3,4 @@ debug: True
 run_name: debug
 env_name: surgery
 agent_name: ppo
+mlflow_uri: file:./runs
