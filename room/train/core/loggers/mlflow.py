@@ -12,6 +12,9 @@ class MLFlowLogger(Logger):
         super().__init__()
         self.client = MlflowClient(tracking_uri)
 
+        if cfg.debug:
+            exp_name = "Debug"
+
         if not self.client.get_experiment_by_name(exp_name):
             self.client.create_experiment(exp_name)
         exp = self.client.get_experiment_by_name(exp_name)

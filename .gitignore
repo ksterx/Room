@@ -163,6 +163,6 @@ venv.bak/
 .vscode/
 .Trash-*/
 
-/*.ipynb
+playground.ipynb
 /outputs/
 runs/
