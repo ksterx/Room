@@ -1,6 +1,8 @@
-log_metrics: True
 debug: True
-run_name: debug
+exp_name: Surg
 env_name: surgery
 agent_name: ppo
 mlflow_uri: file:./runs
+
+run:
+  agent: a2c

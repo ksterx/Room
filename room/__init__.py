@@ -26,24 +26,34 @@ import os
 __all__ = ["__version__", "logger"]
 
 # read library version from file
-path = os.path.join(os.path.dirname(__file__), "version.txt")
-with open(path, "r") as file:
+_path = os.path.join(os.path.dirname(__file__), "version.txt")
+with open(_path, "r") as file:
     __version__ = file.read().strip()
 
 
 # logger with format
 class _Formatter(logging.Formatter):
-    _format = "[%(name)s:%(levelname)s] %(message)s"
+    _grey = "\x1b[37;40m"
+    _blue = "\x1b[34;20m"
+    _yellow = "\x1b[33;21m"
+    _green = "\x1b[32;21m"
+    _red = "\x1b[31;21m"
+    _bold_red = "\x1b[31;1m"
+    _reset = "\x1b[0m"
+
+    _format = "[%(levelname)s] %(message)s"
     _formats = {
-        logging.DEBUG: f"\x1b[38;20m{_format}\x1b[0m",
-        logging.INFO: f"\x1b[38;20m{_format}\x1b[0m",
-        logging.WARNING: f"\x1b[33;20m{_format}\x1b[0m",
-        logging.ERROR: f"\x1b[31;20m{_format}\x1b[0m",
-        logging.CRITICAL: f"\x1b[31;1m{_format}\x1b[0m",
+        logging.DEBUG: f"{_blue}{_format}{_reset}",
+        logging.INFO: f"{_grey}{_format}{_reset}",
+        logging.WARNING: f"{_yellow}{_format}{_reset}",
+        logging.ERROR: f"{_red}{_format}{_reset}",
+        logging.CRITICAL: f"{_bold_red}{_format}{_reset}",
     }
 
     def format(self, record):
-        return logging.Formatter(self._formats.get(record.levelno)).format(record)
+        _log_format = self._formats.get(record.levelno)
+        _formatter = logging.Formatter(_log_format)
+        return _formatter.format(record)
 
 
 _handler = logging.StreamHandler()

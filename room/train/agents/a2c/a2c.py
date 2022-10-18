@@ -9,3 +9,6 @@ class A2C(OnPolicyAgent):
     def act(self, obss: torch.Tensor):
         with torch.no_grad():
             actions, values, infos = self.policy(obss)
+
+    def update(self):
+        pass
