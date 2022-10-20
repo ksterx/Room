@@ -2,15 +2,11 @@
 
 This is a reinforcement learning library.
 
-
-
 ## Installation
 
 ### Prerequisites
 
 - gym < 0.25
-
-
 
 ### Using PyPI
 
@@ -20,21 +16,31 @@ Run the following command at top-level directory:
 pip install -e .
 ```
 
-
-
 ### Using Docker
 
 Coming soon
 
+## Usage
 
+- **Train an agent**
+  
+  ```bash
+  python train.py task=<TASK NAME> [OPTIONS]
+  ```
 
-## Examples
+- **View training progress and results with MLFlow (default: localhost:5000)**
+  
+  ```bash
+  bash dashboard.sh
+  ```
+  
+  
+
+### Example
 
 ```python
-python train.py task=traction
+python train.py task=traction dt=30
 ```
-
-
 
 ## References
 
