@@ -28,7 +28,7 @@ import gym
 import numpy as np
 import torch
 from packaging import version
-from room import logger
+from room import log
 
 
 class EnvWrapper(ABC):
@@ -92,11 +92,11 @@ class GymEnvWrapper(EnvWrapper):
             if isinstance(env, gym.vector.SyncVectorEnv) or isinstance(env, gym.vector.AsyncVectorEnv):
                 self._vectorized = True
         except Exception as e:
-            logger.warning(f"Failed to check for a vectorized environment: {e}")
+            log.warning(f"Failed to check for a vectorized environment: {e}")
 
         self.api_deprecated = version.parse(gym.__version__) < version.parse(" 0.25.0")
         if self.api_deprecated:
-            logger.info(f"OpenAI Gym version: {gym.__version__} <= 0.25")
+            log.info(f"OpenAI Gym version: {gym.__version__} <= 0.25")
         else:
             raise NotImplementedError("OpenAI Gym's new API is not yet supported")
             # TODO: Implement new API
@@ -178,14 +178,14 @@ class GymEnvWrapper(EnvWrapper):
 
 def register_env(env: Any, verbose=False) -> EnvWrapper:
     if isinstance(env, gym.core.Env) or isinstance(env, gym.core.Wrapper):
-        logger.info("Environment type: Gym") if verbose else None
+        log.info("Environment type: Gym") if verbose else None
         return GymEnvWrapper(env)
     # TODO: DeepMind Environment
     # TODO: OmniIsaacGym Environment
     else:
         try:
-            logger.info("Environment type: IsaacGym") if verbose else None
+            log.info("Environment type: IsaacGym") if verbose else None
             return IsaacGymEnvWrapper(env)
         except TypeError:
-            logger.error("Environment type not supported")
+            log.error("Environment type not supported")
             quit()

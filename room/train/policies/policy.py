@@ -1,8 +1,16 @@
+from abc import ABC, abstractmethod
+
 import torch.nn as nn
 
 
-class Model(nn.Module):
-    NotImplemented
+class Policy(nn.Module, ABC):
+    def __init__(self):
+        super.__init__()
 
+    @abstractmethod
+    def forward(self, obss):
+        pass
 
-class Policy():
+    @abstractmethod
+    def predict(self, obss):
+        pass

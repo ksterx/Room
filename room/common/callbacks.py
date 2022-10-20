@@ -1,7 +1,7 @@
 import torch
 
 
-class TrainCallback:
+class Callback:
     def __init__(self, model, optimizer, loss_fn, device):
         self.model = model
         self.optimizer = optimizer

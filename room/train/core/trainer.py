@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import List, Union
 
-from room import logger
+from room import log
+from room.common.callbacks import Callback
 from room.envs.wrappers import EnvWrapper
+from room.train.agents import Agent
 from room.train.core import Logger
-
-from ..agents import Agent
 
 
 class Trainer(ABC):
@@ -15,7 +15,7 @@ class Trainer(ABC):
         agents: Union[Agent, List[Agent]],
         logger: Logger = None,
         cfg: dict = None,
-        callbacks: List = None,
+        callbacks: Union[Callback, List[Callback]] = None,
     ):
         """Reinforcement learning trainer.
 
@@ -48,18 +48,18 @@ class Trainer(ABC):
         """
 
         if not self.logger:
-            logger.warning("No logger is set")
+            log.warning("No logger is set")
 
     @abstractmethod
     def eval(self):
 
         if not self.logger:
-            logger.warning("No logger is set")
+            log.warning("No logger is set")
 
-        logger.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
+        log.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
         quit()
 
     @abstractmethod
     def save(self):
-        logger.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
+        log.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
         quit()

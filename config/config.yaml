@@ -4,5 +4,9 @@ env_name: surgery
 agent_name: ppo
 mlflow_uri: file:./runs
 
-run:
-  agent: a2c
+defaults:
+  - _self_
+  - agent: a2c
+
+hydra:
+  output_subdir: null
