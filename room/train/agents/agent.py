@@ -16,10 +16,11 @@ def wrap_param(cfg: DictConfig, param, param_name: str):
 
 
 class Agent(ABC):
-    def __init__(self, policy, obs_space, act_space, cfg, *args, **kwargs):
+    def __init__(self, env, policy, cfg, *args, **kwargs):
+        self.num_envs = env.num_envs
+        self.obs_space = env.observation_space
+        self.action_space = env.action_space
         self.policy = policy
-        self.obs_space = obs_space
-        self.act_space = act_space
         self.cfg = cfg
 
     @abstractmethod
@@ -30,10 +31,17 @@ class Agent(ABC):
     def collect(self, transition):
         pass
 
+    def on_before_step(self, timestep):
+        pass
+
+    def on_after_step(self):
+        pass
+
 
 class OnPolicyAgent(Agent):
     def __init__(
         self,
+        env,
         policy,
         cfg: DictConfig,
         gamma: float,
@@ -44,19 +52,16 @@ class OnPolicyAgent(Agent):
         use_sde: bool,
         sde_sample_freq: int,
         num_steps: int,
-        obs_space,
-        act_space,
         *args,
         **kwargs,
     ):
 
         super().__init__(
+            env=env,
             policy=policy,
             cfg=cfg,
             use_sde=use_sde,
             sde_sample_freq=sde_sample_freq,
-            obs_space=obs_space,
-            act_space=act_space,
             *args,
             **kwargs,
         )
@@ -68,19 +73,20 @@ class OnPolicyAgent(Agent):
         self.max_grad_norm = max_grad_norm
         self.num_steps = num_steps
 
-        self.memory = RolloutMemory(memory_size=num_steps, num_envs=)
+        self.memory = RolloutMemory(
+            memory_size=num_steps, num_envs=self.num_envs, obs_space=self.obs_space, action_space=self.action_space
+        )
 
     @abstractmethod
     def act(self, obss):
         pass
 
-    def collect(self, obs, action, reward, ):
-        self.memory.add(transition)
+    def collect(self, obs, action, reward, done, log_prob):
+        self.memory.add(obs, action, reward, done, log_prob)
 
     @abstractmethod
     def update(self):
         pass
-
 
 
 class OffPolicyAgent(Agent):
@@ -93,6 +99,7 @@ class OffPolicyAgent(Agent):
 
     @abstractmethod
     def collect(self):
+        pass
 
     @abstractmethod
     def update(self):

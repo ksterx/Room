@@ -5,7 +5,7 @@ from omegaconf import DictConfig
 from room import log
 from room.common.utils import check_agent
 from room.envs import register_env
-from room.train import MLFlowLogger, Trainer
+from room.train import MLFlowLogger, SequentialTrainer
 from room.train.agents import A2C
 
 
@@ -19,13 +19,13 @@ def main(cfg: DictConfig) -> None:
     env = gym.make("CartPole-v1")
     env = register_env(env)
 
-    agent1 = A2C(policy="mlp", cfg=cfg)
+    agent1 = A2C(env=env, policy="mlp", cfg=cfg)
     check_agent(agent1)
     agents = [agent1]
 
     mlf_logger = MLFlowLogger(cfg.mlflow_uri, cfg.exp_name, cfg)
-    trainer = Trainer(env=env, agents=agents, cfg=cfg, logger=mlf_logger)
-    trainer.train()
+    trainer = SequentialTrainer(env=env, agents=agents, cfg=cfg, logger=mlf_logger)
+    trainer.train(cfg.agent.max_timesteps)
 
 
 if __name__ == "__main__":

@@ -30,9 +30,6 @@ class Trainer(ABC):
         self.logger = logger
         self.cfg = cfg
 
-        # Set up agents
-        self.num_agents = 0
-
     @property
     def num_agents(self) -> int:
         if type(self.agents) in [tuple, list]:

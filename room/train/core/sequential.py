@@ -6,22 +6,22 @@ from tqdm import trange
 
 
 class SequentialTrainer(Trainer):
-    def __init__(self, env, agents: Union[tuple, list], cfg, callbacks=None):
+    def __init__(self, env, agents: Union[tuple, list], cfg, logger, callbacks=None):
         super().__init__(env, agents, cfg, callbacks)
 
-    def train(self):
-        super.train()
+    def train(self, max_timesteps: int):
+        super().train()
 
-        states = self.env.reset()
+        observations = self.env.reset()
 
-        for t in trange(self.cfg.max_timesteps):
+        for t in trange(max_timesteps):
 
             for agent in self.agents:
                 agent.on_before_step(timestep=t)
 
             # Get action tensors and stack them
             with torch.no_grad():
-                actions = torch.vstack([agent.act(state) for agent, state in zip(self.agents, states)])
+                actions = torch.vstack([agent.act(state) for agent, state in zip(self.agents, observations)])
             next_states, rewards, dones, info = self.env.step(actions)
 
             with torch.no_grad():
@@ -29,7 +29,7 @@ class SequentialTrainer(Trainer):
                     agent.collect(new_states, action, reward)
 
     def eval(self):
-        super.eval()
+        super().eval()
 
     def save(self):
         pass

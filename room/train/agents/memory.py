@@ -1,14 +1,15 @@
 from abc import ABC, abstractmethod
 
+import numpy as np
 import torch
 
 
 class Memory(ABC):
-    def __init__(self, memory_size, num_envs, obs_shape, action_shape):
+    def __init__(self, memory_size, num_envs, obs_space, action_space):
         self.memory_size = memory_size
         self.num_envs = num_envs
-        self.obs_shape = obs_shape
-        self.action_shape = action_shape
+        self.obs_space = obs_space
+        self.action_space = action_space
         self.reset()
 
     @abstractmethod
@@ -43,12 +44,15 @@ class RolloutMemory(Memory):
 
     def reset(self) -> None:
 
-        # TODO: torch.zeros
         self.observations = torch.zeros(self.memory_size, self.num_envs, *self.obs_space.shape)
-        self.actions = torch.zeros(self.memory_size, self.num_envs, )
+        self.actions = torch.zeros(
+            self.memory_size,
+            self.num_envs,
+        )
         self.rewards = torch.zeros(self.memory_size, self.num_envs)
         self.returns = torch.zeros(self.memory_size, self.num_envs)
-        super.reset()
+
+        super().reset()
 
     def add(self, obs, action, reward, done, log_prob):
 
@@ -67,13 +71,23 @@ class RolloutMemory(Memory):
         Yields:
             data: A batch of transitions
         """
+
         assert self.is_full, "'get' method can be called only when memory is full"
+        indices = np.random.permutation(self.memory_size * self.num_envs)  # Sort randomly
         i = 0
         while i < self.memory_size * self.num_envs:
             yield self.actions[i], self.rewards[i], self.dones[i], self.infos[i]
             i += 1
 
-    def estimate_advantages_and_returns(rewards, dones, values, gamma, gae_lambda, normalize_advantage, ):
+    def estimate_advantages(
+        self,
+        rewards,
+        dones,
+        values,
+        gamma,
+        gae_lambda,
+        normalize_advantage,
+    ):
         """
 
 
@@ -87,8 +101,10 @@ class RolloutMemory(Memory):
             advantages
             values
         """
+
         advantages = torch.zeros_like(rewards)
 
+        advantage = 0
         for step in reversed(range(self.memory_size)):
             if step == self.memory_size - 1:
                 next_non_terminal = 1.0 - dones[step]
@@ -97,7 +113,8 @@ class RolloutMemory(Memory):
                 pass
 
             delta = rewards[step] + gamma * next_values * next_non_terminal - values[step]
-            advantage = delta + gamma * gae_lambda *
+            advantage = delta + gamma * gae_lambda * next_non_terminal * advantage
+            advantages[step] = advantage
 
         returns = advantages + values
         if normalize_advantage:

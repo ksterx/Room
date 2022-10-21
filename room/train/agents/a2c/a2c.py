@@ -13,6 +13,7 @@ class A2C(OnPolicyAgent):
 
     def __init__(
         self,
+        env,
         policy: Union[Policy, str],
         cfg: DictConfig,
         gamma: float = None,
@@ -40,6 +41,7 @@ class A2C(OnPolicyAgent):
         self.normalize_advantage, cfg = wrap_param(cfg, normalize_advantage, "normalize_advantage")
 
         super().__init__(
+            env=env,
             policy=policy,
             cfg=cfg,
             gamma=gamma,

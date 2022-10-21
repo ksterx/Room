@@ -10,3 +10,6 @@ defaults:
 
 hydra:
   output_subdir: null
+
+run:
+  agent: a2c
