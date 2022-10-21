@@ -166,3 +166,4 @@ venv.bak/
 playground.ipynb
 /outputs/
 runs/
+/checkpoints/*

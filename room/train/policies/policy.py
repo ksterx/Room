@@ -14,3 +14,26 @@ class Policy(nn.Module, ABC):
     @abstractmethod
     def predict(self, obss):
         pass
+
+
+def ActorCritic(Policy):
+    def __init__(self):
+        super.__init__()
+
+    @abstractmethod
+    def forward(self, obs):
+        pass
+
+    @abstractmethod
+    def predict(self, obs):
+        pass
+
+    def evaluate_actions(self, observations, actions):
+        """Evaluate actions according to the current policy,
+        given the observations.
+
+        Args:
+            observations (_type_): _description_
+            actions (_type_): _description_
+        """
+        values,

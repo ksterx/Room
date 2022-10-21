@@ -26,6 +26,10 @@ class Agent(ABC):
     def act(self, obss):
         pass
 
+    @abstractmethod
+    def collect(self, transition):
+        pass
+
 
 class OnPolicyAgent(Agent):
     def __init__(
@@ -39,6 +43,7 @@ class OnPolicyAgent(Agent):
         max_grad_norm: float,
         use_sde: bool,
         sde_sample_freq: int,
+        num_steps: int,
         obs_space,
         act_space,
         *args,
@@ -61,19 +66,21 @@ class OnPolicyAgent(Agent):
         self.entropy_coef = entropy_coef
         self.value_loss_coef = value_loss_coef
         self.max_grad_norm = max_grad_norm
+        self.num_steps = num_steps
 
-        self.memory = RolloutMemory(cfg.memory_size, cfg.num_envs)
+        self.memory = RolloutMemory(memory_size=num_steps, num_envs=)
 
     @abstractmethod
     def act(self, obss):
         pass
 
+    def collect(self, obs, action, reward, ):
+        self.memory.add(transition)
+
     @abstractmethod
     def update(self):
         pass
 
-    def log(self):
-        pass
 
 
 class OffPolicyAgent(Agent):
@@ -85,8 +92,8 @@ class OffPolicyAgent(Agent):
         pass
 
     @abstractmethod
-    def update(self):
-        pass
+    def collect(self):
 
-    def log(self):
+    @abstractmethod
+    def update(self):
         pass

@@ -24,12 +24,9 @@ class SequentialTrainer(Trainer):
                 actions = torch.vstack([agent.act(state) for agent, state in zip(self.agents, states)])
             next_states, rewards, dones, info = self.env.step(actions)
 
-            self.agents.step(states, actions, rewards, next_states, dones)
-
-            states = next_states
-
-            if any(dones):
-                states = self.env.reset()
+            with torch.no_grad():
+                for agent in self.agents:
+                    agent.collect(new_states, action, reward)
 
     def eval(self):
         super.eval()
