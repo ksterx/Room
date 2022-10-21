@@ -39,19 +39,24 @@ class Logger:
     _bold_red = "\x1b[31;1m"
     _reset = "\x1b[0m"
 
-    def debug(self, msg):
+    def debug(self, *msg):
+        msg = " ".join(msg)
         print(f"{self._blue}[DEBUG] {msg}{self._reset}")
 
-    def info(self, msg):
+    def info(self, *msg):
+        msg = " ".join(msg)
         print(f"{self._grey}[INFO] {msg}{self._reset}")
 
-    def warning(self, msg):
+    def warning(self, *msg):
+        msg = " ".join(msg)
         print(f"{self._yellow}[WARNING] {msg}{self._reset}")
 
-    def error(self, msg):
+    def error(self, *msg):
+        msg = " ".join(msg)
         print(f"{self._red}[ERROR] {msg}{self._reset}")
 
-    def critical(self, msg):
+    def critical(self, *msg):
+        msg = " ".join(msg)
         print(f"{self._bold_red}[CRITICAL] {msg}{self._reset}")
 
 

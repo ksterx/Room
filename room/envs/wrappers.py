@@ -40,6 +40,7 @@ class EnvWrapper(ABC):
             self.device = torch.device(self.env.device)
         else:
             self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        log.info(f"Using device: {self.device}")
 
     @abstractmethod
     def reset(self) -> torch.Tensor:
@@ -102,7 +103,11 @@ class GymEnvWrapper(EnvWrapper):
             # TODO: Implement new API
 
     def reset(self) -> torch.Tensor:
-        NotImplemented  # TODO
+        states = self.env.reset()  # TODO: New API
+        states = torch.tensor(states, device=self.device, dtype=torch.float32).view(
+            self.num_envs, -1
+        )  # TODO: any type of state like state_to_tensor(states)
+        return states
 
     def step(self, actions: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, Any]:
         if self.is_vectorized:
@@ -178,14 +183,14 @@ class GymEnvWrapper(EnvWrapper):
 
 def register_env(env: Any, verbose=False) -> EnvWrapper:
     if isinstance(env, gym.core.Env) or isinstance(env, gym.core.Wrapper):
-        log.info("Environment type: Gym") if verbose else None
+        logger.info("Environment type: Gym") if verbose else None
         return GymEnvWrapper(env)
     # TODO: DeepMind Environment
     # TODO: OmniIsaacGym Environment
     else:
         try:
-            log.info("Environment type: IsaacGym") if verbose else None
+            logger.info("Environment type: IsaacGym") if verbose else None
             return IsaacGymEnvWrapper(env)
         except TypeError:
-            log.error("Environment type not supported")
+            logger.error("Environment type not supported")
             quit()

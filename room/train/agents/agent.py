@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from omegaconf import DictConfig
 from room.train.agents.memory import Memory, RolloutMemory
+from room.train.policies import policies
 
 
 def wrap_param(cfg: DictConfig, param, param_name: str):
@@ -20,7 +21,8 @@ class Agent(ABC):
         self.num_envs = env.num_envs
         self.obs_space = env.observation_space
         self.action_space = env.action_space
-        self.policy = policy
+        self.policy_name = policy
+        self.policy = policies[policy]
         self.cfg = cfg
 
     @abstractmethod

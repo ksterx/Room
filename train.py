@@ -19,7 +19,7 @@ def main(cfg: DictConfig) -> None:
     env = gym.make("CartPole-v1")
     env = register_env(env)
 
-    agent1 = A2C(env=env, policy="mlp", cfg=cfg)
+    agent1 = A2C(env=env, policy="ac", cfg=cfg)
     check_agent(agent1)
     agents = [agent1]
 

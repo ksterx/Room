@@ -2,6 +2,7 @@ from typing import Union
 
 import torch
 from omegaconf import DictConfig
+from room import log
 from room.train.agents.agent import OnPolicyAgent, wrap_param
 from room.train.agents.memory import RolloutMemory
 from room.train.policies.policy import Policy
@@ -9,7 +10,7 @@ from torch.nn import functional as F
 
 
 class A2C(OnPolicyAgent):
-    agent_name = "a2c"
+    name = "a2c"
 
     def __init__(
         self,
@@ -56,9 +57,9 @@ class A2C(OnPolicyAgent):
             **kwargs,
         )
 
-    def act(self, obss: torch.Tensor):
+    def act(self, states: torch.Tensor):
         with torch.no_grad():
-            actions, values, infos = self.policy(obss)
+            actions, values, infos = self.policy(states)
 
     def update(self):
         rollouts = self.memory.get()

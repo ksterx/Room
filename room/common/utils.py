@@ -1,10 +1,12 @@
+from room import log
 from room.train.agents.agent import Agent
 from room.train.policies import registered_policies
 
 
 def check_agent(agent: Agent):
-    if isinstance(agent.policy, str):
-        if agent.policy not in registered_policies[agent.agent_name]:
+    if isinstance(agent.policy_name, str):
+
+        if agent.policy not in registered_policies[agent.name]:
             raise ValueError(
-                f"{agent.policy} is not available for {agent.agent_name}. Available policies are {registered_policies[agent.agent_name]}"
+                f"'{agent.policy_name}' is not available for {agent.name}. Available policies are {registered_policies[agent.name]}"
             )
