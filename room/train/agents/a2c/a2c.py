@@ -2,11 +2,12 @@ from typing import Union
 
 import torch
 from omegaconf import DictConfig
+from torch.nn import functional as F
+
 from room import log
 from room.train.agents.agent import OnPolicyAgent, wrap_param
 from room.train.agents.memory import RolloutMemory
-from room.train.policies.policy import Policy
-from torch.nn import functional as F
+from room.train.policies.base import Policy
 
 
 class A2C(OnPolicyAgent):
