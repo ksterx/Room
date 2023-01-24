@@ -1,23 +1,43 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
+import gym
 import numpy as np
 import torch
 
+from room.common.preprocessing import get_space_shape
+
 
 class Memory(ABC):
-    def __init__(self, memory_size, num_envs, obs_space, action_space):
+    def __init__(
+        self,
+        memory_size: int,
+        obs_space,
+        action_space,
+        num_envs: int = 1,
+    ):
+        super().__init__()
         self.memory_size = memory_size
         self.num_envs = num_envs
         self.obs_space = obs_space
         self.action_space = action_space
+        self.obs_shape = get_space_shape(obs_space)
+        self.action_shape = get_space_shape(action_space)
         self.reset()
+
+    def __len__(self):
+        return self.memory_size if self.is_full else self.memory_idx
 
     @abstractmethod
     def add(self):
         pass
 
     @abstractmethod
-    def get(self):
+    def sample(self):
+        pass
+
+    @abstractmethod
+    def sample_all(self):
         pass
 
     @abstractmethod
@@ -33,22 +53,25 @@ class Memory(ABC):
 
 
 class RolloutMemory(Memory):
-    def __init__(self, memory_size: int, num_envs: int, obs_space, action_space):
+    def __init__(
+        self,
+        memory_size: int,
+        obs_space,
+        action_space,
+        num_envs: int = 1,
+    ):
         """Store transitions in memory for on-policy training (Advantage Actor-Critic)
 
         Args:
             memory_size (int): The number of steps for calculating the sum of rewards
             num_envs (int): The number of environments
         """
-        super().__init__(memory_size, num_envs, obs_space, action_space)
+        super().__init__(memory_size, obs_space, action_space, num_envs)
 
     def reset(self) -> None:
 
         self.observations = torch.zeros(self.memory_size, self.num_envs, *self.obs_space.shape)
-        self.actions = torch.zeros(
-            self.memory_size,
-            self.num_envs,
-        )
+        self.actions = torch.zeros(self.memory_size, self.num_envs)
         self.rewards = torch.zeros(self.memory_size, self.num_envs)
         self.returns = torch.zeros(self.memory_size, self.num_envs)
 
@@ -65,14 +88,13 @@ class RolloutMemory(Memory):
         if self.memory_idx == self.memory_size:
             self.is_full = True
 
-    def get(self):
+    def sample(self, batch_size: int):
         """Get a batch of data from memory
 
         Yields:
             data: A batch of transitions
         """
 
-        assert self.is_full, "'get' method can be called only when memory is full"
         indices = np.random.permutation(self.memory_size * self.num_envs)  # Sort randomly
         i = 0
         while i < self.memory_size * self.num_envs:

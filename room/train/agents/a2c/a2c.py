@@ -63,7 +63,7 @@ class A2C(OnPolicyAgent):
             actions, values, infos = self.policy(states)
 
     def update(self):
-        rollouts = self.memory.get()
+        rollouts = self.memory.sample()
 
         for rollout in rollouts:  # TODO
 
