@@ -27,4 +27,5 @@ setup(
             "pytest-cov",
         ],
     },
+    package_dir={"": "room"},
 )

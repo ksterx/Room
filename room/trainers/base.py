@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Optional, Union
 
 from room import log
+from room.agents import Agent
 from room.common.callbacks import Callback
+from room.common.config import set_param
 from room.envs.wrappers import EnvWrapper
-from room.train.agents import Agent
-from room.train.core import Logger
+from room.loggers import Logger
+from room.memories import Memory, memory_aliases
 
 
 class Trainer(ABC):
@@ -13,7 +15,9 @@ class Trainer(ABC):
         self,
         env: EnvWrapper,
         agents: Union[Agent, List[Agent]],
-        logger: Logger = None,
+        timesteps: Optional[int] = None,
+        memory: Optional[Union[str, Memory]] = None,
+        logger: Optional[Logger] = None,
         cfg: dict = None,
         callbacks: Union[Callback, List[Callback]] = None,
     ):
@@ -27,8 +31,15 @@ class Trainer(ABC):
         """
         self.env = env
         self.agents = agents
+        self.timesteps = set_param("timesteps", timesteps, cfg)
+        if memory is None:
+            self.memory = Memory  # TODO: get corresponding memory to the agent
+        elif isinstance(memory, str):
+            self.memory = memory_aliases[memory]
+        self.memory = memory
         self.logger = logger
         self.cfg = cfg
+        self.callbacks = callbacks
 
     @property
     def num_agents(self) -> int:

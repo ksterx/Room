@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
+from typing import Dict, Optional, Union
 
+import gym
 from omegaconf import DictConfig
-from room.train.agents.memory import Memory, RolloutMemory
-from room.train.policies import policies
+
+from room.memories.base import Memory, RolloutMemory
+from room.policies import Policy, policies
 
 
 def wrap_param(cfg: DictConfig, param, param_name: str):
@@ -17,17 +20,39 @@ def wrap_param(cfg: DictConfig, param, param_name: str):
 
 
 class Agent(ABC):
-    def __init__(self, env, policy, cfg, *args, **kwargs):
+    def __init__(self, env, policy: Union[str, Policy], cfg: Optional[Dict] = None, *args, **kwargs):
         self.num_envs = env.num_envs
         self.obs_space = env.observation_space
         self.action_space = env.action_space
-        self.policy_name = policy
-        self.policy = policies[policy]
         self.cfg = cfg
+
+        if isinstance(policy, str):
+            self.policy = policies[policy]
+        elif isinstance(policy, Policy):
+            self.policy = policy
+        else:
+            raise TypeError("policy must be a string or a Policy object")
 
     @abstractmethod
     def act(self, obss):
         pass
+
+    @abstractmethod
+    def learn(self):
+        pass
+
+    def play(self, env, num_eps=1, render=True):
+        if isinstance(env, gym.Env):
+            for ep in range(num_eps):
+                obs = env.reset()
+                terminated = False
+                ep_reward = 0
+                while not terminated:
+                    if render:
+                        env.render()
+                    action = self.act(obs)
+                    obs, reward, terminated, _, _ = env.step(action)
+                    ep_reward += reward
 
     @abstractmethod
     def collect(self, transition):
@@ -37,6 +62,12 @@ class Agent(ABC):
         pass
 
     def on_after_step(self):
+        pass
+
+    def save(self, path):
+        self.policy.save(path)
+
+    def load(self):
         pass
 
 

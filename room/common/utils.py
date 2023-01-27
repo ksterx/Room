@@ -1,6 +1,6 @@
 from room import log
-from room.train.agents.agent import Agent
-from room.train.policies import registered_policies
+from room.agents.base import Agent
+from room.policies import registered_policies
 
 
 def check_agent(agent: Agent):

@@ -5,9 +5,9 @@ from omegaconf import DictConfig
 from torch.nn import functional as F
 
 from room import log
-from room.train.agents.agent import OnPolicyAgent, wrap_param
-from room.train.agents.memory import RolloutMemory
-from room.train.policies.base import Policy
+from room.agents.base import OnPolicyAgent, wrap_param
+from room.memories.base import RolloutMemory
+from room.policies.base import Policy
 
 
 class A2C(OnPolicyAgent):
@@ -57,6 +57,9 @@ class A2C(OnPolicyAgent):
             *args,
             **kwargs,
         )
+
+    def __str__(self):
+        return f"A2C\n{self.policy}"
 
     def act(self, states: torch.Tensor):
         with torch.no_grad():

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import deque
 from typing import Union
 
 import gym
@@ -17,6 +18,8 @@ class Memory(ABC):
         num_envs: int = 1,
     ):
         super().__init__()
+
+        self.experiences = deque(maxlen=memory_size)
         self.memory_size = memory_size
         self.num_envs = num_envs
         self.obs_space = obs_space
@@ -42,6 +45,8 @@ class Memory(ABC):
 
     @abstractmethod
     def reset(self):
+        self.observations = torch.zeros(self.memory_size, self.num_envs)
+        self.actions = torch.zeros(self.memory_size, self.num_envs)
         self.is_full = False
         self.memory_idx = 0
 

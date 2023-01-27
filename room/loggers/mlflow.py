@@ -1,10 +1,10 @@
 from typing import Any, Dict, Union
 
-from omegaconf import DictConfig, OmegaConf
-from room import log
-from room.train.core.loggers.logger import Logger, flatten_dict
-
 from mlflow.tracking import MlflowClient
+from omegaconf import DictConfig, OmegaConf
+
+from room import log
+from room.trainers.loggers.logger import Logger, flatten_dict
 
 
 class MLFlowLogger(Logger):

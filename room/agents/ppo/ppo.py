@@ -1,5 +1,6 @@
 import torch
-from room.train.agents import OnPolicyAgent
+
+from room.agents import OnPolicyAgent
 
 
 class PPO(OnPolicyAgent):
