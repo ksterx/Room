@@ -6,6 +6,7 @@ from tqdm import trange
 from room import notice
 from room.agents import Agent
 from room.common.callbacks import Callback
+from room.common.preprocessing import get_param
 from room.envs.wrappers import EnvWrapper
 from room.loggers import Logger
 from room.memories import Memory
@@ -24,6 +25,8 @@ class SequentialTrainer(Trainer):
         callbacks: Union[Callback, List[Callback]] = None,
     ):
         super().__init__(env, agents, timesteps, memory, logger, cfg, callbacks)
+
+        self.memory = get_param(memory, "memory", cfg, agents.policies)  # TODO: Vecenv
 
     def train(self):
         super().train()
@@ -48,6 +51,17 @@ class SequentialTrainer(Trainer):
                     notice.debug(f"State: {state}, Agent: {agent}")
                 actions = torch.vstack([agent.act(state) for agent, state in zip(self.agents, states)])
             next_states, rewards, terminated, truncated, info = self.env.step(actions)
+            self.memory.add(
+                {
+                    "states": states,
+                    "actions": actions,
+                    "rewards": rewards,
+                    "next_states": next_states,
+                    "terminated": terminated,
+                    "truncated": truncated,
+                    "info": info,
+                }
+            )
 
             with torch.no_grad():
                 for agent in self.agents:

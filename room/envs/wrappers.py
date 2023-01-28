@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional, Tuple, Union
 
 import gym
+import gymnasium
 import numpy as np
 import torch
 from packaging import version

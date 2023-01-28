@@ -32,7 +32,7 @@ class Memory(ABC):
     def __str__(self):
         return f"{self.__class__.__name__} (capacity: {self.capacity})"
 
-    def add(self, item):
+    def add(self, item: dict):
         self.experiences.append(item)
 
     def add_batch(self):
