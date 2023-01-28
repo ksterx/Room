@@ -1,7 +1,7 @@
 from room.memories.base import Memory
 
 
-class PrioritizedReplayMemory(Memory):
+class PrioritizedMemory(Memory):
     def __init__(self, capacity, alpha=0.6, beta=0.4, beta_increment=0.001):
         super().__init__(capacity)
         self.alpha = alpha

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 
-from room import log
+from room import notice
 from room.agents import Agent
 from room.common.callbacks import Callback
 from room.common.config import set_param
@@ -56,18 +56,18 @@ class Trainer(ABC):
         """
 
         if not self.logger:
-            log.warning("No logger is set")
+            notice.warning("No logger is set")
 
     @abstractmethod
     def eval(self):
 
         if not self.logger:
-            log.warning("No logger is set")
+            notice.warning("No logger is set")
 
-        log.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
+        notice.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
         quit()
 
     @abstractmethod
     def save(self):
-        log.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
+        notice.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
         quit()

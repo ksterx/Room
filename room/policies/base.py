@@ -55,7 +55,7 @@ class EpsilonGreedyPolicy(Policy):
         return log_prob, entropy
 
 
-def ActorCriticPolicy(Policy):
+class ActorCriticPolicy(Policy):
     def __init__(self, obs_space, action_space, hidden_size, share_backbone=True):
         super.__init__()
         self.action_space = action_space

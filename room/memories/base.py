@@ -6,154 +6,52 @@ import gym
 import numpy as np
 import torch
 
+from room import notice
 from room.common.preprocessing import get_space_shape
 
 
 class Memory(ABC):
     def __init__(
         self,
-        memory_size: int,
-        obs_space,
-        action_space,
+        capacity: int,
         num_envs: int = 1,
     ):
         super().__init__()
 
-        self.experiences = deque(maxlen=memory_size)
-        self.memory_size = memory_size
+        self.experiences = deque(maxlen=capacity)
+        self.capacity = capacity
         self.num_envs = num_envs
-        self.obs_space = obs_space
-        self.action_space = action_space
-        self.obs_shape = get_space_shape(obs_space)
-        self.action_shape = get_space_shape(action_space)
-        self.reset()
+        self.clear()
+
+        if capacity <= 0:
+            raise ValueError("Capacity must be greater than 0")
 
     def __len__(self):
-        return self.memory_size if self.is_full else self.memory_idx
+        return len(self.experiences)
 
-    @abstractmethod
-    def add(self):
+    def __str__(self):
+        return f"{self.__class__.__name__} (capacity: {self.capacity})"
+
+    def add(self, item):
+        self.experiences.append(item)
+
+    def add_batch(self):
         pass
 
-    @abstractmethod
     def sample(self):
-        pass
+        if len(self.experiences) == 0:
+            notice.warning("Memory is empty")
+            return None
 
-    @abstractmethod
     def sample_all(self):
         pass
 
-    @abstractmethod
-    def reset(self):
-        self.observations = torch.zeros(self.memory_size, self.num_envs)
-        self.actions = torch.zeros(self.memory_size, self.num_envs)
+    def clear(self):
         self.is_full = False
         self.memory_idx = 0
 
     @property
     def size(self):
         if self.is_full:
-            return self.memory_size
+            return self.capacity
         return self.memory_idx
-
-
-class RolloutMemory(Memory):
-    def __init__(
-        self,
-        memory_size: int,
-        obs_space,
-        action_space,
-        num_envs: int = 1,
-    ):
-        """Store transitions in memory for on-policy training (Advantage Actor-Critic)
-
-        Args:
-            memory_size (int): The number of steps for calculating the sum of rewards
-            num_envs (int): The number of environments
-        """
-        super().__init__(memory_size, obs_space, action_space, num_envs)
-
-    def reset(self) -> None:
-
-        self.observations = torch.zeros(self.memory_size, self.num_envs, *self.obs_space.shape)
-        self.actions = torch.zeros(self.memory_size, self.num_envs)
-        self.rewards = torch.zeros(self.memory_size, self.num_envs)
-        self.returns = torch.zeros(self.memory_size, self.num_envs)
-
-        super().reset()
-
-    def add(self, obs, action, reward, done, log_prob):
-
-        self.observations[self.memory_idx] = obs.clone()
-        self.actions[self.memory_idx] = action.clone()
-        self.rewards[self.memory_idx] = reward.clone()
-
-        self.memory_idx += 1
-        assert self.memory_idx <= self.memory_size
-        if self.memory_idx == self.memory_size:
-            self.is_full = True
-
-    def sample(self, batch_size: int):
-        """Get a batch of data from memory
-
-        Yields:
-            data: A batch of transitions
-        """
-
-        indices = np.random.permutation(self.memory_size * self.num_envs)  # Sort randomly
-        i = 0
-        while i < self.memory_size * self.num_envs:
-            yield self.actions[i], self.rewards[i], self.dones[i], self.infos[i]
-            i += 1
-
-    def estimate_advantages(
-        self,
-        rewards,
-        dones,
-        values,
-        gamma,
-        gae_lambda,
-        normalize_advantage,
-    ):
-        """
-
-
-        Args:
-            rewards: A batch of rewards
-            dones: A batch of done flags
-            values: A batch of values
-
-        Returns:
-            returns
-            advantages
-            values
-        """
-
-        advantages = torch.zeros_like(rewards)
-
-        advantage = 0
-        for step in reversed(range(self.memory_size)):
-            if step == self.memory_size - 1:
-                next_non_terminal = 1.0 - dones[step]
-                next_value = next_values[step]
-            else:
-                pass
-
-            delta = rewards[step] + gamma * next_values * next_non_terminal - values[step]
-            advantage = delta + gamma * gae_lambda * next_non_terminal * advantage
-            advantages[step] = advantage
-
-        returns = advantages + values
-        if normalize_advantage:
-            advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
-        return returns, advantages, values
-
-
-class RandomMemory(Memory):
-    def __init__(self):
-        NotImplemented
-
-
-class PrioritizedMemory(Memory):
-    def __init__(self):
-        NotImplemented

@@ -1,4 +1,4 @@
-from room import log
+from room import notice
 from room.agents.base import Agent
 from room.policies import registered_policies
 

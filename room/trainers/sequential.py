@@ -3,7 +3,7 @@ from typing import List, Optional, Union
 import torch
 from tqdm import trange
 
-from room import log
+from room import notice
 from room.agents import Agent
 from room.common.callbacks import Callback
 from room.envs.wrappers import EnvWrapper
@@ -43,9 +43,9 @@ class SequentialTrainer(Trainer):
 
             # Get action tensor from each agent and stack them
             with torch.no_grad():
-                log.debug(f"States: {states}")
+                notice.debug(f"States: {states}")
                 for agent, state in zip(self.agents, states):
-                    log.debug(f"State: {state}, Agent: {agent}")
+                    notice.debug(f"State: {state}, Agent: {agent}")
                 actions = torch.vstack([agent.act(state) for agent, state in zip(self.agents, states)])
             next_states, rewards, terminated, truncated, info = self.env.step(actions)
 

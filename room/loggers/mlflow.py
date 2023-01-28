@@ -3,8 +3,8 @@ from typing import Any, Dict, Union
 from mlflow.tracking import MlflowClient
 from omegaconf import DictConfig, OmegaConf
 
-from room import log
-from room.trainers.loggers.logger import Logger, flatten_dict
+from room import notice
+from room.loggers.base import Logger, flatten_dict
 
 
 class MLFlowLogger(Logger):
@@ -38,7 +38,7 @@ class MLFlowLogger(Logger):
         params = flatten_dict(params)
         for k, v in params.items():
             if len(str(v)) > 250:
-                log.warning(f"Mlflow only allows parameters with up to 250 characters. Discard {k}={v}")
+                notice.warning(f"Mlflow only allows parameters with up to 250 characters. Discard {k}={v}")
                 continue
 
             self.log_param(k, v)

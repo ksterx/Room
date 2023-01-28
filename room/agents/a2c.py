@@ -4,9 +4,9 @@ import torch
 from omegaconf import DictConfig
 from torch.nn import functional as F
 
-from room import log
+from room import notice
 from room.agents.base import OnPolicyAgent, wrap_param
-from room.memories.base import RolloutMemory
+from room.memories.base import Memory
 from room.policies.base import Policy
 
 

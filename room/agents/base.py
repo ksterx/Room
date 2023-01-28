@@ -4,7 +4,7 @@ from typing import Dict, Optional, Union
 import gym
 from omegaconf import DictConfig
 
-from room.memories.base import Memory, RolloutMemory
+from room.memories.base import Memory
 from room.policies import Policy, policies
 
 
@@ -20,10 +20,7 @@ def wrap_param(cfg: DictConfig, param, param_name: str):
 
 
 class Agent(ABC):
-    def __init__(self, env, policy: Union[str, Policy], cfg: Optional[Dict] = None, *args, **kwargs):
-        self.num_envs = env.num_envs
-        self.obs_space = env.observation_space
-        self.action_space = env.action_space
+    def __init__(self, policy: Union[str, Policy], cfg: Optional[Dict] = None, *args, **kwargs):
         self.cfg = cfg
 
         if isinstance(policy, str):
@@ -54,7 +51,6 @@ class Agent(ABC):
                     obs, reward, terminated, _, _ = env.step(action)
                     ep_reward += reward
 
-    @abstractmethod
     def collect(self, transition):
         pass
 

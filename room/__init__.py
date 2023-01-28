@@ -3,7 +3,7 @@ from typing import NamedTuple
 
 import torch
 
-__all__ = ["__version__", "log"]
+__all__ = ["__version__", "notice"]
 
 # read library version from file
 _path = os.path.join(os.path.dirname(__file__), "version.txt")
@@ -11,7 +11,7 @@ with open(_path, "r") as file:
     __version__ = file.read().strip()
 
 
-class Logger:
+class Notice:
     _grey = "\x1b[37;40m"
     _blue = "\x1b[34;20m"
     _yellow = "\x1b[33;20m"
@@ -41,7 +41,7 @@ class Logger:
         print(f"{self._bold_red}[CRITICAL] {msg}{self._reset}")
 
 
-log = Logger()
+notice = Notice()
 
 
 class Transition(NamedTuple):
