@@ -20,6 +20,7 @@ class SequentialTrainer(Trainer):
         env: EnvWrapper,
         agents: Union[Agent, List[Agent]],
         memory: Optional[Union[str, Memory]] = None,
+        batch_size: Optional[int] = None,
         optimizer: Optional[Union[str, optim.Optimizer]] = None,
         timesteps: Optional[int] = None,
         device: Optional[Union[torch.device, str]] = None,
@@ -33,6 +34,7 @@ class SequentialTrainer(Trainer):
             env=env,
             agents=agents,
             memory=memory,
+            batch_size=batch_size,
             optimizer=optimizer,
             timesteps=timesteps,
             device=device,
@@ -50,13 +52,10 @@ class SequentialTrainer(Trainer):
 
         self.on_before_train()
 
+        # Training loop
         for t in trange(self.timesteps):
 
-            for callback in self.callbacks:
-                callback.on_before_step(timestep=t)
-
-            for agent in self.agents:
-                agent.on_before_step(timestep=t)
+            self.on_before_step()
 
             # Get action tensor from each agent and stack them
             with torch.no_grad():
@@ -77,9 +76,14 @@ class SequentialTrainer(Trainer):
                 }
             )
 
-            with torch.no_grad():
+            states = next_states
+
+            if not self.memory.is_full():
+                continue
+            else:
+                batch = self.memory.sample(batch_size=self.batch_size)
                 for agent in self.agents:
-                    agent.collect(new_states, action, reward)
+                    agent.learn(batch)
 
             with torch.no_grad():
                 if terminated.any() or truncated.any():

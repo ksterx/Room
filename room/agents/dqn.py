@@ -32,14 +32,18 @@ class DQN(Agent):
             device=device,
             cfg=cfg,
             logger=logger,
+            lr=lr,
         )
 
         self.epsilon = get_param(epsilon, "epsilon", cfg)
         self.gamma = get_param(gamma, "gamma", cfg)
-        self.optimizer = optimizer
-        self.lr = lr
 
         self.loss_fn = F.smooth_l1_loss  # TODO: get from cfg or parse from name
+
+    def initialize(self, state_shape: Optional[int] = None, action_shape: Optional[int] = None):
+        super().initialize(state_shape=state_shape, action_shape=action_shape)
+        self.q_net = self.model
+        self.target_q_net = self.model
 
     def act(self, state: torch.Tensor) -> torch.Tensor:
         q = self.target_q_net(state)
@@ -47,7 +51,7 @@ class DQN(Agent):
 
         # eposilon greedy
         if torch.rand(1) < self.epsilon:
-            action = torch.randint(0, self.action_dim, (1,))  # TODO: Fix this
+            action = torch.randint(0, self.action_shape, (1,))  # TODO: Fix this
         return action
 
     def learn(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
@@ -62,9 +66,3 @@ class DQN(Agent):
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-
-    def on_before_train(self, state_dim: Optional[int] = None, action_dim: Optional[int] = None):
-        super().on_before_train(state_dim, action_dim)
-        self.q_net = self.model
-        self.target_q_net = self.model
-        self.configure_optimizer(self.optimizer, self.lr)

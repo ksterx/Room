@@ -9,9 +9,10 @@ from room import notice
 from room.agents import Agent
 from room.common.callbacks import Callback
 from room.common.utils import get_device, get_optimizer, get_param
+from room.envs.utils import get_action_shape, get_obs_shape
 from room.envs.wrappers import EnvWrapper
 from room.loggers import Logger
-from room.memories import Memory, memory_aliases
+from room.memories import Memory, registered_memories
 
 
 class Trainer(ABC):
@@ -20,6 +21,7 @@ class Trainer(ABC):
         env: EnvWrapper,
         agents: Union[Agent, List[Agent]],
         memory: Optional[Union[str, Memory]] = None,
+        batch_size: Optional[int] = None,
         optimizer: Optional[Union[str, optim.Optimizer]] = None,
         timesteps: Optional[int] = None,
         device: Optional[Union[torch.device, str]] = None,
@@ -38,19 +40,25 @@ class Trainer(ABC):
             cfg (yaml): Configurations
         """
         self.env = env
-        self.agents = agents
+        self.agents = agents if isinstance(agents, list) else [agents]
+        self.batch_size = get_param(batch_size, "batch_size", cfg)
         self.optimizer = optimizer
         self.device = get_device(device)
         self.cfg = cfg
         self.callbacks = callbacks
         self.logger = logger
         self.timesteps = get_param(timesteps, "timesteps", cfg)
-        self.memory = get_param(memory, "memory", cfg, memory_aliases)  # TODO: Vecenv
+        self.memory = get_param(memory, "memory", cfg, registered_memories)  # TODO: Vecenv
         if isinstance(memory, str):
             self.memory = self.memory(capacity=kwargs["capacity"], device=self.device)
 
         if logger is None:
             notice.warning("No logger is set")
+
+        self.obs_shape = get_obs_shape(env.observation_space)
+        self.action_shape = get_action_shape(env.action_space)
+
+        self._on_trainer_init(self.obs_shape, self.action_shape)
 
     @property
     def num_agents(self) -> int:
@@ -73,15 +81,28 @@ class Trainer(ABC):
         quit()
 
     def on_before_train(self):
+        self._loop_callback_agent("on_before_train")
+
+    def on_before_step(self):
+        self._loop_callback_agent("on_before_step")
+
+    def _on_trainer_init(self, state_shape, action_shape):
         if isinstance(self.agents, list):
             for agent in self.agents:
                 agent.optimizer = self.optimizer
-                agent.on_before_train()
+                agent.initialize(state_shape=state_shape, action_shape=action_shape)
         elif isinstance(self.agents, Agent):
             self.agents.optimizer = self.optimizer
-            self.agents.on_before_train()
+            self.agents.initialize(state_shape=state_shape, action_shape=action_shape)
         else:
             raise TypeError("agents should be either Agent or List[Agent]")
 
-        for callback in self.callbacks:
-            callback.on_before_train()
+    def _loop_callback_agent(self, method_name: str):
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                getattr(callback, method_name)()
+        if isinstance(self.agents, list):
+            for agent in self.agents:
+                getattr(agent, method_name)()
+        elif isinstance(self.agents, Agent):
+            getattr(self.agents, method_name)()

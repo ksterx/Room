@@ -17,16 +17,27 @@ class Agent(ABC):
     def __init__(
         self,
         model: Optional[Union[Policy, str]] = None,
+        optimizer: Union[torch.optim.Optimizer, str] = None,
         device: Optional[Union[str, torch.device]] = None,
         cfg: Optional[Dict] = None,
         logger: Optional[Dict] = None,
+        lr: Optional[float] = None,
         *args,
         **kwargs,
     ):
         self.model = get_param(model, "model", cfg)
+        self.optimizer = optimizer
         self.device = get_device(device)
         self.cfg = cfg
         self.logger = logger
+        self.lr = lr
+
+    def initialize(self, state_shape: Optional[int] = None, action_shape: Optional[int] = None):
+        self.state_shape = state_shape
+        self.action_shape = action_shape
+        if isinstance(self.model, str):
+            self._build_registered_model(model_name=self.model, state_shape=state_shape, action_shape=action_shape)
+        self.configure_optimizer(self.optimizer, lr=self.lr)
 
     @abstractmethod
     def act(self, obss):
@@ -49,29 +60,24 @@ class Agent(ABC):
                     obs, reward, terminated, _, _ = env.step(action)
                     ep_reward += reward
 
-    def on_before_step(self, timestep):
-        pass
-
-    def on_after_step(self):
-        pass
-
-    @abstractmethod
-    def on_before_train(self, state_dim: Optional[int] = None, action_dim: Optional[int] = None):
-        if isinstance(self.model, str):
-            self.state_dim = state_dim
-            self.action_dim = action_dim
-            self.model = self._build_registered_model(model_name=self.model, state_dim=state_dim, action_dim=action_dim)
-
     def save(self, path):
         self.model.save(path)
 
     def load(self):
         pass
 
+    def on_before_step(self):
+        pass
+
+    def on_after_step(self):
+        pass
+
+    def on_before_train(self):
+        pass
+
     def configure_optimizer(self, optimizer: Union[str, torch.optim.Optimizer], lr: Optional[float] = None):
         lr = get_param(lr, "lr", self.cfg)
-        print(optimizer)
         self.optimizer = get_optimizer(optimizer, self.cfg)(self.model.parameters(), lr=lr)
 
-    def _build_registered_model(self, model_name, state_dim, action_dim):
-        self.model = registered_models[model_name].get(state_dim, action_dim)
+    def _build_registered_model(self, model_name, state_shape, action_shape):
+        self.model = registered_models[model_name](state_shape, action_shape)

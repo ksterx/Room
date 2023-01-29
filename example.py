@@ -24,7 +24,6 @@ def main(omegacfg: DictConfig) -> None:
     agent = DQN(model="mlp3", cfg=cfg)
 
     # mlf_logger = MLFlowLogger(omegacfg.mlflow_uri, omegacfg.exp_name, omegacfg)
-    print(cfg)
     trainer = SequentialTrainer(env=env, agents=agent, memory="random", cfg=cfg, logger=None, **cfg)
     trainer.train()
 
