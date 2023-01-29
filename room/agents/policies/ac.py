@@ -1,7 +1,8 @@
 import torch
+from networks.blocks import MLPBN
+from torch import nn
 
 from room.agents.policies.base import Policy
-from room.agents.policies.blocks import FCBN
 
 
 class ActorCriticPolicy(Policy):
@@ -12,12 +13,12 @@ class ActorCriticPolicy(Policy):
         self.share_backbone = share_backbone
 
         if share_backbone:
-            self.backbone = FCBN(layers=[obs_space.shape[0], hidden_size, hidden_size])
+            self.backbone = MLPBN(layers=[obs_space.shape[0], hidden_size, hidden_size])
             self.actor_head = nn.Linear(self.hidden_size, self.action_space.n)
             self.critic_head = nn.Linear(self.hidden_size, 1)
         else:
-            self.actor_net = FCBN(layers=[obs_space.shape[0], hidden_size, hidden_size, action_space.n])
-            self.critic_net = FCBN(layers=[obs_space.shape[0], hidden_size, hidden_size, 1])
+            self.actor_net = MLPBN(layers=[obs_space.shape[0], hidden_size, hidden_size, action_space.n])
+            self.critic_net = MLPBN(layers=[obs_space.shape[0], hidden_size, hidden_size, 1])
 
     def forward(self, obs):
         if self.share_backbone:

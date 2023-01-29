@@ -1,6 +1,6 @@
 from room import notice
 from room.agents.base import Agent
-from room.policies import registered_policies
+from room.agents.policies import registered_policies
 
 
 def check_agent(agent: Agent):

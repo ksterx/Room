@@ -13,18 +13,19 @@ from room.memories import Memory
 from room.trainers.base import Trainer
 
 
-class SequentialTrainer(Trainer):
+class SimpleTrainer(Trainer):
     def __init__(
         self,
         env: EnvWrapper,
-        agents: Union[Agent, List[Agent]],
+        agent: Agent,
         timesteps: Optional[int] = None,
         memory: Optional[Union[str, Memory]] = None,
         logger: Optional[Logger] = None,
         cfg: dict = None,
         callbacks: Union[Callback, List[Callback]] = None,
     ):
-        super().__init__(env, agents, timesteps, memory, logger, cfg, callbacks)
+        super().__init__(env, agent, timesteps, memory, logger, cfg, callbacks)
+        self.agent = agent
 
     def train(self):
         super().train()
@@ -39,8 +40,7 @@ class SequentialTrainer(Trainer):
             for callback in self.callbacks:
                 callback.on_before_step(timestep=t)
 
-            for agent in self.agents:
-                agent.on_before_step(timestep=t)
+            self.agent.on_before_step(timestep=t)
 
             # Get action tensor from each agent and stack them
             with torch.no_grad():

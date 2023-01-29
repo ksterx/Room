@@ -11,16 +11,11 @@ from room.common.preprocessing import get_space_shape
 
 
 class Memory(ABC):
-    def __init__(
-        self,
-        capacity: int,
-        num_envs: int = 1,
-    ):
+    def __init__(self, capacity: int):
         super().__init__()
 
         self.experiences = deque(maxlen=capacity)
         self.capacity = capacity
-        self.num_envs = num_envs
         self.clear()
 
         if capacity <= 0:
@@ -33,10 +28,14 @@ class Memory(ABC):
         return f"{self.__class__.__name__} (capacity: {self.capacity})"
 
     def add(self, item: dict):
-        self.experiences.append(item)
+        """Add experience to memory.
 
-    def add_batch(self):
-        pass
+        Args:
+            item (dict): Experience dictionary.
+
+                {"key": torch.Tensor(shape=(num_envs, *shape))}
+        """
+        self.experiences.append(item)
 
     def sample(self):
         if len(self.experiences) == 0:

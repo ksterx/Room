@@ -5,12 +5,12 @@ from omegaconf import DictConfig
 from torch.nn import functional as F
 
 from room import notice
-from room.agents.base import OnPolicyAgent, wrap_param
+from room.agents.base import Agent, wrap_param
+from room.agents.policies.base import Policy
 from room.memories.base import Memory
-from room.policies.base import Policy
 
 
-class A2C(OnPolicyAgent):
+class A2C(Agent):
     name = "a2c"
 
     def __init__(

@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 
+import ray
+
 from room import notice
 from room.agents import Agent
 from room.common.callbacks import Callback
-from room.common.config import set_param
+from room.common.preprocessing import get_param
 from room.envs.wrappers import EnvWrapper
 from room.loggers import Logger
 from room.memories import Memory, memory_aliases
@@ -31,15 +33,16 @@ class Trainer(ABC):
         """
         self.env = env
         self.agents = agents
-        self.timesteps = set_param("timesteps", timesteps, cfg)
-        if memory is None:
-            self.memory = Memory  # TODO: get corresponding memory to the agent
-        elif isinstance(memory, str):
-            self.memory = memory_aliases[memory]
-        self.memory = memory
+
         self.logger = logger
         self.cfg = cfg
         self.callbacks = callbacks
+
+        self.timesteps = get_param(timesteps, "timesteps", cfg)
+        self.memory = get_param(memory, "memory", cfg, memory_aliases)  # TODO: Vecenv
+
+        if logger is None:
+            notice.warning("No logger is set")
 
     @property
     def num_agents(self) -> int:
@@ -50,22 +53,11 @@ class Trainer(ABC):
 
     @abstractmethod
     def train(self) -> None:
-        """Execute training loop
-
-        This method should be called before training loop is executed in the subclass.
-        """
-
-        if not self.logger:
-            notice.warning("No logger is set")
+        return NotImplementedError
 
     @abstractmethod
     def eval(self):
-
-        if not self.logger:
-            notice.warning("No logger is set")
-
-        notice.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
-        quit()
+        return NotImplementedError
 
     @abstractmethod
     def save(self):

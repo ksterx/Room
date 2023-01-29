@@ -1,9 +1,9 @@
 import torch
 
-from room.agents import OnPolicyAgent
+from room.agents import Agent
 
 
-class PPO(OnPolicyAgent):
+class PPO(Agent):
     def __init__(self, env, args):
         super().__init__(env, args)
         self.actor = Actor(env, args)

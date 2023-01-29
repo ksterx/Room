@@ -1,21 +1,18 @@
-from typing import Optional
+from typing import Optional, Union
 
 import torch
 
 from room.agents.base import Agent
 from room.agents.policies.base import Policy
-from room.agents.policies.egreedy import EpsilonGreedy
-from room.common.typing import CfgType, Dict, PolicyType
+from room.common.typing import CfgType, Dict
 from room.loggers import Logger
 from room.memories.base import Memory
 
 
 class DQN(Agent):
-    policies = {"egreedy": EpsilonGreedy}
-
     def __init__(
         self,
-        policy: PolicyType,
+        policy: Union[Policy, str],
         cfg: CfgType,
         logger: Optional[Logger] = None,
         *args,

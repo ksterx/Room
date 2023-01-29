@@ -8,6 +8,7 @@ INSTALL_REQUIRES = [
     "gym",
     "torch",
     "hydra-core>=1.2",
+    "ray[default]",
 ]
 
 

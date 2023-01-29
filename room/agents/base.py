@@ -2,10 +2,12 @@ from abc import ABC, abstractmethod
 from typing import Dict, Optional, Union
 
 import gym
+import ray
+import torch
 from omegaconf import DictConfig
 
+from room import notice
 from room.agents.policies import Policy, policies
-from room.common.typing import PolicyType
 from room.memories.base import Memory
 
 
@@ -21,7 +23,14 @@ def wrap_param(cfg: DictConfig, param, param_name: str):
 
 
 class Agent(ABC):
-    def __init__(self, policy: PolicyType, cfg: Optional[Dict] = None, *args, **kwargs):
+    def __init__(
+        self,
+        policy: Union[Policy, str],
+        cfg: Optional[Dict] = None,
+        device: Optional[Union[str, torch.device]] = None,
+        *args,
+        **kwargs,
+    ):
         self.cfg = cfg
 
         if isinstance(policy, str):
@@ -29,7 +38,7 @@ class Agent(ABC):
         elif isinstance(policy, Policy):
             self.policy = policy
         else:
-            raise TypeError("policy must be a string or a Policy object")
+            notice.warning(f"Policy {policy} is not supported")
 
     @abstractmethod
     def act(self, obss):
