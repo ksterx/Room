@@ -6,7 +6,7 @@ from tqdm import trange
 from room import notice
 from room.agents import Agent
 from room.common.callbacks import Callback
-from room.common.preprocessing import get_param
+from room.common.utils import get_param
 from room.envs.wrappers import EnvWrapper
 from room.loggers import Logger
 from room.memories import Memory

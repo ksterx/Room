@@ -5,8 +5,9 @@ from omegaconf import DictConfig
 from torch.nn import functional as F
 
 from room import notice
-from room.agents.base import Agent, wrap_param
-from room.agents.policies.base import Policy
+from room.agents.base import Agent
+from room.agents.policies import Policy
+from room.common.utils import get_device, get_param
 from room.memories.base import Memory
 
 
@@ -32,15 +33,16 @@ class A2C(Agent):
     ):
 
         # If paramters are not provided, read them from the config
-        gamma, cfg = wrap_param(cfg, gamma, "gamma")
-        gae_lambda, cfg = wrap_param(cfg, gae_lambda, "gae_lambda")
-        entropy_coef, cfg = wrap_param(cfg, entropy_coef, "entropy_coef")
-        value_loss_coef, cfg = wrap_param(cfg, value_loss_coef, "value_loss_coef")
-        max_grad_norm, cfg = wrap_param(cfg, max_grad_norm, "max_grad_norm")
-        use_sde, cfg = wrap_param(cfg, use_sde, "use_sde")
-        sde_sample_freq, cfg = wrap_param(cfg, sde_sample_freq, "sde_sample_freq")
-        num_steps, cfg = wrap_param(cfg, num_steps, "num_steps")
-        self.normalize_advantage, cfg = wrap_param(cfg, normalize_advantage, "normalize_advantage")
+
+        self.gamma = get_param(gamma, "gamma", cfg)
+        self.gae_lambda = get_param(gae_lambda, "gae_lambda", cfg)
+        self.entropy_coef = get_param(entropy_coef, "entropy_coef", cfg)
+        self.value_loss_coef = get_param(value_loss_coef, "value_loss_coef", cfg)
+        self.max_grad_norm = get_param(max_grad_norm, "max_grad_norm", cfg)
+        self.use_sde = get_param(use_sde, "use_sde", cfg)
+        self.sde_sample_freq = get_param(sde_sample_freq, "sde_sample_freq", cfg)
+        self.num_steps = get_param(num_steps, "num_steps", cfg)
+        self.normalize_advantage = get_param(normalize_advantage, "normalize_advantage", cfg)
 
         super().__init__(
             env=env,

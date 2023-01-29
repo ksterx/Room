@@ -3,7 +3,7 @@ import gym
 from room.agents.policies import EpsilonGreedyPolicy, Policy
 from room.memories.base import Memory, RolloutMemory
 
-env = gym.make("CartPole-v1", render_mode="human")
+env = gym.make("CartPole-v1")
 obs_space = env.observation_space.shape
 action_space = env.action_space.n
 

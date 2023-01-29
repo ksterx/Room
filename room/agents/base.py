@@ -8,37 +8,24 @@ from omegaconf import DictConfig
 
 from room import notice
 from room.agents.policies import Policy, policies
+from room.common.utils import get_device, get_optimizer, get_param
 from room.memories.base import Memory
-
-
-def wrap_param(cfg: DictConfig, param, param_name: str):
-    # Read param from config
-    if param is None:
-        param = cfg.agent[param_name]
-    # Override with an function argument
-    else:
-        cfg.agent[param_name] = param
-
-    return param, cfg
 
 
 class Agent(ABC):
     def __init__(
         self,
         policy: Union[Policy, str],
-        cfg: Optional[Dict] = None,
         device: Optional[Union[str, torch.device]] = None,
+        cfg: Optional[Dict] = None,
+        logger: Optional[Dict] = None,
         *args,
         **kwargs,
     ):
+        self.policy = get_param(policy, "policy", cfg)
+        self.device = get_device(device)
         self.cfg = cfg
-
-        if isinstance(policy, str):
-            self.policy = policies[policy]
-        elif isinstance(policy, Policy):
-            self.policy = policy
-        else:
-            notice.warning(f"Policy {policy} is not supported")
+        self.logger = logger
 
     @abstractmethod
     def act(self, obss):
@@ -61,9 +48,6 @@ class Agent(ABC):
                     obs, reward, terminated, _, _ = env.step(action)
                     ep_reward += reward
 
-    def collect(self, transition):
-        pass
-
     def on_before_step(self, timestep):
         pass
 
@@ -75,3 +59,7 @@ class Agent(ABC):
 
     def load(self):
         pass
+
+    def configure_optimizer(self, optimizer: Union[str, torch.optim.Optimizer], lr: Optional[float] = None):
+        lr = get_param(lr, "lr", self.cfg)
+        self.optimizer = get_optimizer(optimizer, self.cfg)(self.policy.parameters(), lr=lr)

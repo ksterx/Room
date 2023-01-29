@@ -3,7 +3,7 @@ from typing import List, Optional, Union
 import torch
 from torch import nn
 
-from room.common.preprocessing import get_device
+from room.common.utils import get_device
 
 
 def activation_from_str(activation: str):
