@@ -3,6 +3,7 @@ from typing import List, Optional, Union
 import torch
 from torch import nn
 
+from room import notice
 from room.common.utils import get_device
 
 
@@ -60,11 +61,10 @@ class MLP(nn.Module):
             elif i == len(layers) - 1:
                 break
             else:
-                print(i, len(layers))
+                notice.critical(i, len(layers))
                 raise ValueError("Unexpected error")
 
         self.net.to(get_device(device))
-        print(self.net)
 
     def forward(self, x):
         return self.net(x)
@@ -104,7 +104,6 @@ class MLPBN(nn.Module):
                 raise ValueError("Unexpected error. e.g. Layers list must be of length 3 or more")
 
         self.net.to(get_device(device))
-        print(self.net)
 
     def forward(self, x):
         return self.net(x)

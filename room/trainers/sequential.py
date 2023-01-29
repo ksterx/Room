@@ -59,9 +59,6 @@ class SequentialTrainer(Trainer):
 
             # Get action tensor from each agent and stack them
             with torch.no_grad():
-                notice.debug(f"States: {states}")
-                for agent, state in zip(self.agents, states):
-                    notice.debug(f"State: {state}, Agent: {agent}")
                 actions = torch.vstack([agent.act(state) for agent, state in zip(self.agents, states)])
             next_states, rewards, terminated, truncated, info = self.env.step(actions)
             self.memory.add(
@@ -78,16 +75,16 @@ class SequentialTrainer(Trainer):
 
             states = next_states
 
+            with torch.no_grad():
+                if terminated.any() or truncated.any():
+                    states, infos = self.env.reset()
+
             if not self.memory.is_full():
                 continue
             else:
                 batch = self.memory.sample(batch_size=self.batch_size)
                 for agent in self.agents:
                     agent.learn(batch)
-
-            with torch.no_grad():
-                if terminated.any() or truncated.any():
-                    states, infos = self.env.reset()
 
     def eval(self):
         super().eval()

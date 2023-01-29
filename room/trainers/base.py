@@ -60,6 +60,9 @@ class Trainer(ABC):
 
         self._on_trainer_init(self.obs_shape, self.action_shape)
 
+        for i, agent in enumerate(self.agents):
+            print(f"\nAgent {i}: \n{agent.model}")
+
     @property
     def num_agents(self) -> int:
         if type(self.agents) in [tuple, list]:

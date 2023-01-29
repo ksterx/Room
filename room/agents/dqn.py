@@ -56,11 +56,11 @@ class DQN(Agent):
 
     def learn(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         self.model.train()
-        q = self.q_net(batch["state"])
-        q = q.gather(1, batch["action"].unsqueeze(1)).squeeze(1)
-        q_next = self.target_q_net(batch["next_state"])
+        q = self.q_net(batch["states"])
+        q = q.gather(1, batch["actions"].unsqueeze(1)).squeeze(1)
+        q_next = self.target_q_net(batch["next_states"])
         q_next = q_next.max(1)[0]
-        q_target = batch["reward"].squeeze(1) + self.gamma * q_next
+        q_target = batch["rewards"].squeeze(1) + self.gamma * q_next
         loss = self.loss_fn(q, q_target)
 
         self.optimizer.zero_grad()
