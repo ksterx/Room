@@ -24,21 +24,25 @@ def get_param(
     aliases: Optional[Dict[str, Any]] = None,
 ):
     if value is None:
-        notice.info(f"Loading default {param_name}. It is defined in the config file.")
         try:
             value = cfg[param_name]
+            notice.info(f"Loading default {param_name}. It is defined in the config file.")
         except KeyError:
             raise KeyError(f"{param_name} is not defined in the config file.")
+        except TypeError:
+            raise TypeError("No config file is provided.")
 
     elif isinstance(value, str):
         if aliases is None:
-            notice.info(f"Loading {param_name} from the config file.")
             try:
                 value = cfg[param_name]
+                notice.info(f"{param_name}: {value} is loaded from the config file.")
             except KeyError:
                 raise KeyError(f"No {param_name} is not defined in the config file.")
+            except TypeError:
+                raise TypeError("Either config file or aliases should be provided.")
         else:
-            notice.info(f"Loading {param_name} from the aliases.")
+            notice.info(f"{param_name}: {value} is loaded from the aliases")
             try:
                 value = aliases[value]
             except KeyError:
@@ -84,3 +88,26 @@ def get_optimizer(optimizer: Optional[Union[str, optim.Optimizer]], cfg: Optiona
     }
     optimizer = get_param(optimizer, "optimizer", cfg, optim_aliases)
     return optimizer
+
+
+def flatten_dict(d: dict):
+    """Flatten a nested dictionary into a single dictionary."""
+    out = {}
+
+    def flatten(item, name=""):
+        if type(item) is not dict:
+            try:
+                del out["name"]
+            except KeyError:
+                pass
+            key = name[:-1]
+            if key in out.keys():
+                raise ValueError(f"Key {key} is duplicated.")
+            else:
+                out[name[:-1]] = item
+        else:
+            for a in item:
+                flatten(item[a], a + ".")
+
+    flatten(d)
+    return out

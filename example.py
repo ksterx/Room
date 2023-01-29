@@ -1,30 +1,32 @@
 import gym
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 from room import notice
-from room.agents import A2C
-from room.common.utils import check_agent
-from room.core import MLFlowLogger, SequentialTrainer
+from room.agents import DQN
+from room.common.utils import flatten_dict
 from room.envs import register_env
+from room.loggers import MLFlowLogger
+from room.memories import RandomMemory
+from room.trainers import SequentialTrainer
 
 
 @hydra.main(config_path="./config", config_name="config", version_base=None)
-def main(cfg: DictConfig) -> None:
+def main(omegacfg: DictConfig) -> None:
     notice.info("Starting training...")
-    if cfg.debug:
+    if omegacfg.debug:
         notice.warning("Running in DEBUG MODE")
+    cfg = flatten_dict(OmegaConf.to_container(omegacfg, resolve=True))
 
     env = gym.make("CartPole-v1", render_mode="human")
     env = register_env(env)
 
-    agent1 = A2C(policy="ac", cfg=cfg)
-    check_agent(agent1)
-    agents = [agent1]
+    agent = DQN(model="mlp3", cfg=cfg)
 
-    mlf_logger = MLFlowLogger(cfg.mlflow_uri, cfg.exp_name, cfg)
-    trainer = SequentialTrainer(env=env, agents=agents, cfg=cfg, logger=mlf_logger)
-    trainer.train(cfg.agent.max_timesteps)
+    # mlf_logger = MLFlowLogger(omegacfg.mlflow_uri, omegacfg.exp_name, omegacfg)
+    print(cfg)
+    trainer = SequentialTrainer(env=env, agents=agent, memory="random", cfg=cfg, logger=None, **cfg)
+    trainer.train()
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 from typing import List, Optional, Union
 
 import torch
+from torch import optim
 from tqdm import trange
 
 from room import notice
@@ -18,21 +19,36 @@ class SequentialTrainer(Trainer):
         self,
         env: EnvWrapper,
         agents: Union[Agent, List[Agent]],
-        timesteps: Optional[int] = None,
         memory: Optional[Union[str, Memory]] = None,
+        optimizer: Optional[Union[str, optim.Optimizer]] = None,
+        timesteps: Optional[int] = None,
+        device: Optional[Union[torch.device, str]] = None,
         logger: Optional[Logger] = None,
         cfg: dict = None,
         callbacks: Union[Callback, List[Callback]] = None,
+        *args,
+        **kwargs,
     ):
-        super().__init__(env, agents, timesteps, memory, logger, cfg, callbacks)
+        super().__init__(
+            env=env,
+            agents=agents,
+            memory=memory,
+            optimizer=optimizer,
+            timesteps=timesteps,
+            device=device,
+            logger=logger,
+            cfg=cfg,
+            callbacks=callbacks,
+            *args,
+            **kwargs,
+        )
 
     def train(self):
         super().train()
 
         states = self.env.reset()
 
-        for callback in self.callbacks:
-            callback.on_before_train()
+        self.on_before_train()
 
         for t in trange(self.timesteps):
 

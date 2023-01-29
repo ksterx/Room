@@ -6,10 +6,11 @@ mlflow_uri: file:./runs
 
 defaults:
   - _self_
-  - agent: a2c
+  - agent: dqn
+  - task: cartpole
 
 hydra:
   output_subdir: null
 
 run:
-  agent: a2c
+  agent: dqn

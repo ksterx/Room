@@ -10,19 +10,20 @@ from room import notice
 from room.agents.policies import Policy, policies
 from room.common.utils import get_device, get_optimizer, get_param
 from room.memories.base import Memory
+from room.networks import registered_models
 
 
 class Agent(ABC):
     def __init__(
         self,
-        policy: Union[Policy, str],
+        model: Optional[Union[Policy, str]] = None,
         device: Optional[Union[str, torch.device]] = None,
         cfg: Optional[Dict] = None,
         logger: Optional[Dict] = None,
         *args,
         **kwargs,
     ):
-        self.policy = get_param(policy, "policy", cfg)
+        self.model = get_param(model, "model", cfg)
         self.device = get_device(device)
         self.cfg = cfg
         self.logger = logger
@@ -54,12 +55,23 @@ class Agent(ABC):
     def on_after_step(self):
         pass
 
+    @abstractmethod
+    def on_before_train(self, state_dim: Optional[int] = None, action_dim: Optional[int] = None):
+        if isinstance(self.model, str):
+            self.state_dim = state_dim
+            self.action_dim = action_dim
+            self.model = self._build_registered_model(model_name=self.model, state_dim=state_dim, action_dim=action_dim)
+
     def save(self, path):
-        self.policy.save(path)
+        self.model.save(path)
 
     def load(self):
         pass
 
     def configure_optimizer(self, optimizer: Union[str, torch.optim.Optimizer], lr: Optional[float] = None):
         lr = get_param(lr, "lr", self.cfg)
-        self.optimizer = get_optimizer(optimizer, self.cfg)(self.policy.parameters(), lr=lr)
+        print(optimizer)
+        self.optimizer = get_optimizer(optimizer, self.cfg)(self.model.parameters(), lr=lr)
+
+    def _build_registered_model(self, model_name, state_dim, action_dim):
+        self.model = registered_models[model_name].get(state_dim, action_dim)

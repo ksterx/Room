@@ -12,7 +12,7 @@ from room.envs.loaders import (
 from room.envs.wrappers import EnvWrapper, GymEnvWrapper, IsaacGymPreview3EnvWrapper
 
 
-def register_env(env: Any, verbose=False) -> EnvWrapper:
+def register_env(env: Any, verbose=True) -> EnvWrapper:
     if isinstance(env, gym.Env) or isinstance(env, gym.Wrapper):
         notice.info("Environment type: Gym") if verbose else None
         return GymEnvWrapper(env)

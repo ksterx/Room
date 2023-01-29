@@ -46,7 +46,7 @@ class A2C(Agent):
 
         super().__init__(
             env=env,
-            policy=policy,
+            model=policy,
             cfg=cfg,
             gamma=gamma,
             gae_lambda=gae_lambda,
@@ -61,18 +61,18 @@ class A2C(Agent):
         )
 
     def __str__(self):
-        return f"A2C\n{self.policy}"
+        return f"A2C\n{self.model}"
 
     def act(self, states: torch.Tensor):
         with torch.no_grad():
-            actions, values, infos = self.policy(states)
+            actions, values, infos = self.model(states)
 
     def update(self):
         rollouts = self.memory.sample()
 
         for rollout in rollouts:  # TODO
 
-            values, log_probs, entropy = self.policy.evaluate_actions(rollout.observations, rollout.actions)
+            values, log_probs, entropy = self.model.evaluate_actions(rollout.observations, rollout.actions)
             policy_loss = -(advantages * log_probs).mean()
             value_loss = F.mse_loss(returns, values)
             loss = policy_loss + self.entropy_coef * entropy_loss + self.value_loss_coef * value_loss
@@ -80,7 +80,7 @@ class A2C(Agent):
             # Optimization step
             self.optimizer.zero_grad()
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(self.policy.parameters(), self.max_grad_norm)  # Avoid gradient explosion
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)  # Avoid gradient explosion
             self.optimizer.step()
 
     # def step(self, states, actions, rewards, next_states, dones):
