@@ -1,34 +1,53 @@
-import torch
+from abc import ABC, abstractmethod
+
+from room import notice
+from room.loggers import MLFlowLogger
 
 
-class Callback:
-    def __init__(self, model, optimizer, loss_fn, device):
-        self.model = model
-        self.optimizer = optimizer
-        self.loss_fn = loss_fn
-        self.device = device
+class Callback(ABC):
+    @abstractmethod
+    def on_timestep_start(self):
+        raise NotImplementedError
 
-    def on_train_begin(self, logs):
-        self.model.train()
+    @abstractmethod
+    def on_timestep_end(self):
+        raise NotImplementedError
 
-    def on_train_batch_begin(self, batch, logs):
+    @abstractmethod
+    def on_episode_start(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def on_episode_end(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def on_train_start(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def on_train_end(self):
+        raise NotImplementedError
+
+
+class MLFlowCallback(MLFlowLogger, Callback):
+    def __init__(self, tracking_uri, cfg, exp_name, *args, **kwargs):
+        super().__init__(tracking_uri=tracking_uri, cfg=cfg, exp_name=exp_name, *args, **kwargs)
+
+    def on_timestep_start(self):
+        self.log_hparams(self.cfg)
+
+    def on_timestep_end(self):
         pass
 
-    def on_train_batch_end(self, batch, logs):
+    def on_episode_start(self):
         pass
 
-    def on_train_end(self, logs):
+    def on_episode_end(self, metircs, episode):
+        self.log_metrics(metircs, episode)
+
+    def on_train_start(self):
         pass
 
-    def __call__(self, batch):
-        self.on_train_batch_begin(batch, {})
-        x, y = batch
-        x = x.to(self.device)
-        y = y.to(self.device)
-        y_pred = self.model(x)
-        loss = self.loss_fn(y_pred, y)
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-        self.on_train_batch_end(batch, {"loss": loss.item()})
-        return loss.item()
+    def on_train_end(self):
+        pass

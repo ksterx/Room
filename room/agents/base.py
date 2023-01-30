@@ -66,13 +66,22 @@ class Agent(ABC):
     def load(self):
         pass
 
-    def on_before_step(self):
+    def on_timestep_start(self):
         pass
 
-    def on_after_step(self):
+    def on_timestep_end(self):
         pass
 
-    def on_before_train(self):
+    def on_episode_start(self):
+        pass
+
+    def on_episode_end(self):
+        pass
+
+    def on_train_start(self):
+        pass
+
+    def on_train_end(self):
         pass
 
     def configure_optimizer(self, optimizer: Union[str, torch.optim.Optimizer], lr: Optional[float] = None):

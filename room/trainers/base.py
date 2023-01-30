@@ -3,6 +3,7 @@ from typing import List, Optional, Union
 
 import ray
 import torch
+from kxmod.service import SlackBot
 from torch import optim
 
 from room import notice
@@ -11,7 +12,7 @@ from room.common.callbacks import Callback
 from room.common.utils import get_device, get_optimizer, get_param
 from room.envs.utils import get_action_shape, get_obs_shape
 from room.envs.wrappers import EnvWrapper
-from room.loggers import Logger
+from room.loggers import Logger, MLFlowLogger
 from room.memories import Memory, registered_memories
 
 
@@ -53,7 +54,7 @@ class Trainer(ABC):
             self.memory = self.memory(capacity=kwargs["capacity"], device=self.device)
 
         if logger is None:
-            notice.warning("No logger is set")
+            notice.info("No logger is set. Activate MLFlowLogger")
 
         self.obs_shape = get_obs_shape(env.observation_space)
         self.action_shape = get_action_shape(env.action_space)
@@ -83,11 +84,23 @@ class Trainer(ABC):
         notice.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
         quit()
 
-    def on_before_train(self):
-        self._loop_callback_agent("on_before_train")
+    def on_timestep_start(self):
+        self._loop_callback_agent("on_timestep_start")
 
-    def on_before_step(self):
-        self._loop_callback_agent("on_before_step")
+    def on_timestep_end(self):
+        self._loop_callback_agent("on_timestep_end")
+
+    def on_episode_start(self):
+        self._loop_callback_agent("on_episode_start")
+
+    def on_episode_end(self, metrics, episode):
+        self._loop_callback_agent("on_episode_end", metrics, episode)
+
+    def on_train_start(self):
+        self._loop_callback_agent("on_train_start")
+
+    def on_train_end(self):
+        self._loop_callback_agent("on_train_end")
 
     def _on_trainer_init(self, state_shape, action_shape):
         if isinstance(self.agents, list):
@@ -100,10 +113,13 @@ class Trainer(ABC):
         else:
             raise TypeError("agents should be either Agent or List[Agent]")
 
-    def _loop_callback_agent(self, method_name: str):
+    def _loop_callback_agent(self, method_name: str, *args, **kwargs):
         if self.callbacks is not None:
             for callback in self.callbacks:
-                getattr(callback, method_name)()
+                if isinstance(callback, Logger):
+                    getattr(callback, method_name)(*args, **kwargs)
+                else:
+                    getattr(callback, method_name)()
         if isinstance(self.agents, list):
             for agent in self.agents:
                 getattr(agent, method_name)()

@@ -50,12 +50,12 @@ class SequentialTrainer(Trainer):
 
         states = self.env.reset()
 
-        self.on_before_train()
+        self.on_train_start()
 
         # Training loop
         for t in trange(self.timesteps):
 
-            self.on_before_step()
+            self.on_timestep_start()
 
             # Get action tensor from each agent and stack them
             with torch.no_grad():

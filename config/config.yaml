@@ -1,7 +1,5 @@
 debug: True
-exp_name: Surg
-env_name: surgery
-agent_name: ppo
+exp_name: cartpole
 mlflow_uri: file:./runs
 
 defaults:
@@ -12,5 +10,4 @@ defaults:
 hydra:
   output_subdir: null
 
-run:
-  agent: dqn
+run: dqn

@@ -1,6 +1,7 @@
 from typing import List, Optional, Union
 
 import torch
+from kxmod.service import SlackBot
 from torch import optim
 from tqdm import trange
 
@@ -18,7 +19,7 @@ class SimpleTrainer(Trainer):
     def __init__(
         self,
         env: EnvWrapper,
-        agents: Union[Agent, List[Agent]],
+        agents: Agent,
         memory: Optional[Union[str, Memory]] = None,
         batch_size: Optional[int] = None,
         optimizer: Optional[Union[str, optim.Optimizer]] = None,
@@ -48,14 +49,15 @@ class SimpleTrainer(Trainer):
     def train(self):
         super().train()
 
+        episode = 0
+        total_reward = 0
         states = self.env.reset()
-
-        self.on_before_train()
+        self.on_train_start()
 
         # Training loop
         for t in trange(self.timesteps):
 
-            self.on_before_step()
+            self.on_timestep_start()
 
             # Get action tensor from each agent and stack them
             with torch.no_grad():
@@ -72,12 +74,19 @@ class SimpleTrainer(Trainer):
                     "info": info,
                 }
             )
+            total_reward += rewards.sum().item()  # TODO: check if this is correct
 
+            self.on_timestep_end()
             states = next_states
 
             with torch.no_grad():
                 if terminated.any() or truncated.any():
+                    metrics = {"total_reward": total_reward}
+                    monitor = {"metrics": metrics, "episode": episode}
+                    self.on_episode_end(**monitor)
                     states, infos = self.env.reset()
+                    episode += 1
+                    total_reward = 0
 
             if not self.memory.is_full():
                 continue
@@ -85,6 +94,8 @@ class SimpleTrainer(Trainer):
                 batch = self.memory.sample(batch_size=self.batch_size)
                 for agent in self.agents:
                     agent.learn(batch)
+
+        self.on_train_end()
 
     def eval(self):
         super().eval()
