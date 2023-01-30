@@ -20,8 +20,11 @@ class MLFlowLogger(Logger):
 
         if cfg["debug"]:
             exp_name = "Debug"
+        else:
+            exp_name = cfg["exp_name"]
 
         self.experiment = self.client.get_experiment_by_name(exp_name)
+
         if self.experiment is None:
             self.experiment = self.client.create_experiment(exp_name)
 

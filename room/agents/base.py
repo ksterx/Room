@@ -4,11 +4,13 @@ from typing import Dict, Optional, Union
 import gym
 import ray
 import torch
+from gym.wrappers import RecordVideo
 from omegaconf import DictConfig
 
 from room import notice
 from room.agents.policies import Policy, policies
 from room.common.utils import get_device, get_optimizer, get_param
+from room.envs import register_env
 from room.envs.wrappers import EnvWrapper
 from room.memories.base import Memory
 from room.networks import registered_models
@@ -48,8 +50,13 @@ class Agent(ABC):
     def learn(self):
         pass
 
-    def play(self, env, num_eps=1):
+    def play(self, env, num_eps=1, save_video=True, save_dir=None):
         self.model.eval()
+        if isinstance(env, gym.Env):
+            if save_video:
+                env = RecordVideo(env, video_folder=save_dir, name_prefix="video")
+            env = register_env(env)
+
         if isinstance(env, EnvWrapper):
             for _ in range(num_eps):
                 states = env.reset()

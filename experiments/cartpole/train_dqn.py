@@ -1,3 +1,5 @@
+import argparse
+
 import gym
 import hydra
 from kxmod.service import SlackBot
@@ -22,7 +24,7 @@ def main(omegacfg: DictConfig) -> None:
     bot = SlackBot()
     mlf_callback = MLFlowCallback(omegacfg.mlflow_uri, cfg, omegacfg.exp_name)
 
-    env = gym.make("CartPole-v1")
+    env = gym.make("CartPole-v1", render_mode="human")
     env = register_env(env)
 
     agent = DQN(model="mlp3", cfg=cfg)
@@ -34,7 +36,19 @@ def main(omegacfg: DictConfig) -> None:
     if not omegacfg.debug:
         bot.say("Training finished!")
 
-    agent.play(register_env(gym.make("CartPole-v1", render_mode="human")), num_eps=5)
+    save_video = True
+    if save_video:
+        render_mode = "rgb_array"
+    else:
+        render_mode = "human"
+    agent.play(
+        gym.make("CartPole-v1", render_mode=render_mode),
+        num_eps=5,
+        save_video=save_video,
+        save_dir="/tmp/experiments/cartpole",
+    )
+    if save_video:
+        mlf_callback.client.log_artifacts(mlf_callback.run_id, "/tmp/experiments/cartpole")
 
 
 if __name__ == "__main__":
