@@ -20,9 +20,10 @@ class Notice:
     _bold_red = "\x1b[31;1m"
     _reset = "\x1b[0m"
 
-    def debug(self, *msg):
+    def debug(self, *msg, render):
         msg = " ".join(msg)
-        print(f"{self._blue}[DEBUG] {msg}{self._reset}")
+        if render:
+            print(f"{self._blue}[DEBUG] {msg}{self._reset}")
 
     def info(self, *msg):
         msg = " ".join(msg)

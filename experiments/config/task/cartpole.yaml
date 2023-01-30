@@ -1,0 +1,4 @@
+name: cartpole
+timesteps: 10000
+capacity: 1000
+batch_size: 32

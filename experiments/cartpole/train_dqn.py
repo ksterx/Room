@@ -12,7 +12,7 @@ from room.memories import RandomMemory
 from room.trainers import SimpleTrainer
 
 
-@hydra.main(config_path="./config", config_name="config", version_base=None)
+@hydra.main(config_path="../config", config_name="config", version_base=None)
 def main(omegacfg: DictConfig) -> None:
     notice.info("Starting training...")
     if omegacfg.debug:
@@ -21,9 +21,8 @@ def main(omegacfg: DictConfig) -> None:
 
     bot = SlackBot()
     mlf_callback = MLFlowCallback(omegacfg.mlflow_uri, cfg, omegacfg.exp_name)
-    print(mlf_callback.cfg)
 
-    env = gym.make("CartPole-v1", render_mode="human")
+    env = gym.make("CartPole-v1")
     env = register_env(env)
 
     agent = DQN(model="mlp3", cfg=cfg)
@@ -31,7 +30,11 @@ def main(omegacfg: DictConfig) -> None:
     # mlf_logger = MLFlowLogger(omegacfg.mlflow_uri, omegacfg.exp_name, omegacfg)
     trainer = SimpleTrainer(env=env, agents=agent, memory="random", cfg=cfg, callbacks=[mlf_callback], **cfg)
     trainer.train()
-    bot.say("Training finished!")
+
+    if not omegacfg.debug:
+        bot.say("Training finished!")
+
+    agent.play(register_env(gym.make("CartPole-v1", render_mode="human")), num_eps=5)
 
 
 if __name__ == "__main__":

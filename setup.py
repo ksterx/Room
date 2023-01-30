@@ -1,6 +1,6 @@
 import os
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 LIB_NAME = "room"
 root_dir = os.path.dirname(os.path.realpath(__file__))
@@ -28,5 +28,9 @@ setup(
             "pytest-cov",
         ],
     },
-    package_dir={"": "room"},
+    packages=find_packages(
+        include=[f"{LIB_NAME}"],
+        exclude=["tests", "docs", "devenvs", "experiments"],
+    ),
+    # package_dir={"": "room"},
 )

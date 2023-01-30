@@ -22,11 +22,12 @@ def get_param(
     param_name: Optional[str],
     cfg: Optional[Dict[str, Any]],
     aliases: Optional[Dict[str, Any]] = None,
+    verbose: bool = True,
 ):
     if value is None:
         try:
             value = cfg[param_name]
-            notice.info(f"Loading default {param_name}. It is defined in the config file.")
+            notice.debug(f"Loading default {param_name}. It is defined in the config file.", render=verbose)
         except KeyError:
             raise KeyError(f"{param_name} is not defined in the config file.")
         except TypeError:
@@ -36,13 +37,13 @@ def get_param(
         if aliases is None:
             try:
                 value = cfg[param_name]
-                notice.info(f"{param_name}: {value} is loaded from the config file.")
+                notice.debug(f"{param_name}: {value} is loaded from the config file.", render=verbose)
             except KeyError:
                 raise KeyError(f"No {param_name} is not defined in the config file.")
             except TypeError:
                 raise TypeError("Either config file or aliases should be provided.")
         else:
-            notice.info(f"{param_name}: {value} is loaded from the aliases")
+            notice.debug(f"{param_name}: {value} is loaded from the aliases", render=verbose)
             try:
                 value = aliases[value]
             except KeyError:
@@ -52,14 +53,16 @@ def get_param(
         if aliases is None:
             try:
                 if value == cfg[param_name]:
-                    notice.info(f"Loading {param_name} same as the config file.")
+                    notice.debug(f"Loading {param_name} same as the config file.", render=verbose)
                 else:
-                    notice.info(f"Loading {param_name} from the function argument instead of the config file.")
+                    notice.debug(
+                        f"Loading {param_name} from the function argument instead of the config file.", render=verbose
+                    )
             except KeyError:
                 notice.warning(f"No {param_name} is not defined in the config file.")
         else:
             if value in aliases.values():
-                notice.info(f"Loading {param_name} same as the aliases.")
+                notice.debug(f"Loading {param_name} same as the aliases.", render=verbose)
             else:
                 notice.warning(f"No {param_name} is not defined in the aliases.")
 

@@ -33,6 +33,7 @@ class Callback(ABC):
 class MLFlowCallback(MLFlowLogger, Callback):
     def __init__(self, tracking_uri, cfg, exp_name, *args, **kwargs):
         super().__init__(tracking_uri=tracking_uri, cfg=cfg, exp_name=exp_name, *args, **kwargs)
+        notice.info(f"You can open the dashboard by `bash dashboard.sh`.")
 
     def on_timestep_start(self):
         self.log_hparams(self.cfg)

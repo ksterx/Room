@@ -9,6 +9,7 @@ from omegaconf import DictConfig
 from room import notice
 from room.agents.policies import Policy, policies
 from room.common.utils import get_device, get_optimizer, get_param
+from room.envs.wrappers import EnvWrapper
 from room.memories.base import Memory
 from room.networks import registered_models
 
@@ -47,18 +48,19 @@ class Agent(ABC):
     def learn(self):
         pass
 
-    def play(self, env, num_eps=1, render=True):
-        if isinstance(env, gym.Env):
-            for ep in range(num_eps):
-                obs = env.reset()
+    def play(self, env, num_eps=1):
+        self.model.eval()
+        if isinstance(env, EnvWrapper):
+            for _ in range(num_eps):
+                states = env.reset()
                 terminated = False
                 ep_reward = 0
                 while not terminated:
-                    if render:
-                        env.render()
-                    action = self.act(obs)
-                    obs, reward, terminated, _, _ = env.step(action)
+                    actions = self.act(states[0])
+                    states, reward, terminated, _, _ = env.step(actions)
                     ep_reward += reward
+        else:
+            notice.warning("'env' must be an instance of 'EnvWrapper'")
 
     def save(self, path):
         self.model.save(path)
@@ -85,7 +87,7 @@ class Agent(ABC):
         pass
 
     def configure_optimizer(self, optimizer: Union[str, torch.optim.Optimizer], lr: Optional[float] = None):
-        lr = get_param(lr, "lr", self.cfg)
+        lr = get_param(lr, "lr", self.cfg, verbose=self.cfg["debug"])
         self.optimizer = get_optimizer(optimizer, self.cfg)(self.model.parameters(), lr=lr)
 
     def _build_registered_model(self, model_name, state_shape, action_shape):
