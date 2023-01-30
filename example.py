@@ -8,7 +8,7 @@ from room.common.utils import flatten_dict
 from room.envs import register_env
 from room.loggers import MLFlowLogger
 from room.memories import RandomMemory
-from room.trainers import SequentialTrainer
+from room.trainers import SimpleTrainer
 
 
 @hydra.main(config_path="./config", config_name="config", version_base=None)
@@ -24,7 +24,7 @@ def main(omegacfg: DictConfig) -> None:
     agent = DQN(model="mlp3", cfg=cfg)
 
     # mlf_logger = MLFlowLogger(omegacfg.mlflow_uri, omegacfg.exp_name, omegacfg)
-    trainer = SequentialTrainer(env=env, agents=agent, memory="random", cfg=cfg, logger=None, **cfg)
+    trainer = SimpleTrainer(env=env, agents=agent, memory="random", cfg=cfg, logger=None, **cfg)
     trainer.train()
 
 

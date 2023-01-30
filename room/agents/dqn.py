@@ -57,7 +57,7 @@ class DQN(Agent):
     def learn(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         self.model.train()
         q = self.q_net(batch["states"])
-        q = q.gather(1, batch["actions"].unsqueeze(1)).squeeze(1)
+        q = q.gather(1, batch["actions"]).squeeze(1)  # Select q value for action taken
         q_next = self.target_q_net(batch["next_states"])
         q_next = q_next.max(1)[0]
         q_target = batch["rewards"].squeeze(1) + self.gamma * q_next
