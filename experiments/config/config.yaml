@@ -1,6 +1,6 @@
-debug: True
+debug: False
 exp_name: cartpole
-mlflow_uri: file:./runs
+mlflow_uri: file:./experiments/results
 
 defaults:
   - _self_
@@ -9,5 +9,7 @@ defaults:
 
 hydra:
   output_subdir: null
+  run:
+    dir: ./experiments/results
 
 run: dqn

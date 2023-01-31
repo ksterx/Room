@@ -24,13 +24,15 @@ class MLFlowLogger(Logger):
             exp_name = cfg["exp_name"]
 
         self.experiment = self.client.get_experiment_by_name(exp_name)
-
         if self.experiment is None:
-            self.experiment = self.client.create_experiment(exp_name)
+            self.experiment_id = self.client.create_experiment(exp_name)
+            self.experiment = self.client.get_experiment(self.experiment_id)
+        else:
+            self.experiment_id = self.experiment.experiment_id
 
         # convert hydra config to dict
         agent_tag = cfg["run"]
-        self.run = self.client.create_run(self.experiment.experiment_id, tags={"agent": agent_tag})
+        self.run = self.client.create_run(self.experiment_id, tags={"agent": agent_tag})
         self.run_id = self.run.info.run_id
         # self.log_hparams(cfg)
 

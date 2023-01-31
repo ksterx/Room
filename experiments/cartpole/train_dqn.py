@@ -1,5 +1,3 @@
-import argparse
-
 import gym
 import hydra
 from kxmod.service import SlackBot
@@ -10,7 +8,6 @@ from room.agents import DQN
 from room.common.callbacks import MLFlowCallback
 from room.common.utils import flatten_dict
 from room.envs import register_env
-from room.memories import RandomMemory
 from room.trainers import SimpleTrainer
 
 
@@ -36,7 +33,7 @@ def main(omegacfg: DictConfig) -> None:
     if not omegacfg.debug:
         bot.say("Training finished!")
 
-    save_video = True
+    save_video = False
     if save_video:
         render_mode = "rgb_array"
     else:
