@@ -52,6 +52,7 @@ class SimpleTrainer(Trainer):
         episode = 0
         total_reward = 0
         states = self.env.reset()
+
         self.on_train_start()
 
         # Training loop
@@ -61,7 +62,7 @@ class SimpleTrainer(Trainer):
 
             # Get action tensor from each agent and stack them
             with torch.no_grad():
-                actions = torch.vstack([agent.act(state) for agent, state in zip(self.agents, states)])
+                actions = torch.vstack([agent.act(state, step=t) for agent, state in zip(self.agents, states)])
             next_states, rewards, terminated, truncated, info = self.env.step(actions)
             self.memory.add(
                 {
@@ -77,13 +78,16 @@ class SimpleTrainer(Trainer):
             total_reward += rewards.sum().item()  # TODO: check if this is correct
 
             self.on_timestep_end()
+
             states = next_states
 
             with torch.no_grad():
                 if terminated.any() or truncated.any():
                     metrics = {"total_reward": total_reward}
-                    monitor = {"metrics": metrics, "episode": episode}
+                    monitor = {"metrics": metrics, "episode": episode, "timestep": t, "total_reward": total_reward}
+
                     self.on_episode_end(**monitor)
+
                     states, infos = self.env.reset()
                     episode += 1
                     total_reward = 0
@@ -99,6 +103,3 @@ class SimpleTrainer(Trainer):
 
     def eval(self):
         super().eval()
-
-    def save(self):
-        pass

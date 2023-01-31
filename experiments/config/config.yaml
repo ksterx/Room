@@ -1,6 +1,9 @@
-debug: False
 exp_name: cartpole
 mlflow_uri: file:./experiments/results
+run: dqn
+debug: False
+render: False
+save_video: False
 
 defaults:
   - _self_
@@ -11,5 +14,3 @@ hydra:
   output_subdir: null
   run:
     dir: ./experiments/results
-
-run: dqn

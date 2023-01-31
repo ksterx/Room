@@ -35,12 +35,13 @@ class Agent(ABC):
         self.logger = logger
         self.lr = lr
 
-    def initialize(self, state_shape: Optional[int] = None, action_shape: Optional[int] = None):
+    def initialize(self, state_shape: Optional[int] = None, action_shape: Optional[int] = None, training: bool = True):
         self.state_shape = state_shape
         self.action_shape = action_shape
         if isinstance(self.model, str):
             self._build_registered_model(model_name=self.model, state_shape=state_shape, action_shape=action_shape)
-        self.configure_optimizer(self.optimizer, lr=self.lr)
+        if training:
+            self.configure_optimizer(self.optimizer, lr=self.lr)
 
     @abstractmethod
     def act(self, obss):
@@ -69,11 +70,21 @@ class Agent(ABC):
         else:
             notice.warning("'env' must be an instance of 'EnvWrapper'")
 
-    def save(self, path):
-        self.model.save(path)
+    @staticmethod
+    def save(ckpt, path):
+        torch.save(ckpt, path)
 
-    def load(self):
-        pass
+    def load(self, path):
+        self.model.load_state_dict(torch.load(path))
+
+    def make_ckpt(self, timestep, total_reward):
+        return {
+            "model": self.model.state_dict(),
+            "optimizer": self.optimizer.state_dict(),
+            "lr": self.lr,
+            "timestep": timestep,
+            "total_reward": total_reward,
+        }
 
     def on_timestep_start(self):
         pass
@@ -88,13 +99,13 @@ class Agent(ABC):
         pass
 
     def on_train_start(self):
-        pass
+        self.model.train()
 
     def on_train_end(self):
         pass
 
     def configure_optimizer(self, optimizer: Union[str, torch.optim.Optimizer], lr: Optional[float] = None):
-        lr = get_param(lr, "lr", self.cfg, verbose=self.cfg["debug"])
+        lr = get_param(lr, "lr", self.cfg)
         self.optimizer = get_optimizer(optimizer, self.cfg)(self.model.parameters(), lr=lr)
 
     def _build_registered_model(self, model_name, state_shape, action_shape):

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import List, Optional, Union
 
 import ray
@@ -9,10 +10,10 @@ from torch import optim
 from room import notice
 from room.agents import Agent
 from room.common.callbacks import Callback
-from room.common.utils import get_device, get_optimizer, get_param
+from room.common.utils import get_device, get_param
 from room.envs.utils import get_action_shape, get_obs_shape
 from room.envs.wrappers import EnvWrapper
-from room.loggers import Logger, MLFlowLogger
+from room.loggers import Logger
 from room.memories import Memory, registered_memories
 
 
@@ -76,11 +77,6 @@ class Trainer(ABC):
     def eval(self):
         return NotImplementedError
 
-    @abstractmethod
-    def save(self):
-        notice.warning("Use SequentialTrainer or ParallelTrainer instead of Trainer")
-        quit()
-
     def on_timestep_start(self):
         self._loop_callback_agent("on_timestep_start")
 
@@ -90,14 +86,18 @@ class Trainer(ABC):
     def on_episode_start(self):
         self._loop_callback_agent("on_episode_start")
 
-    def on_episode_end(self, metrics, episode):
-        self._loop_callback_agent("on_episode_end", metrics, episode)
+    def on_episode_end(self, *args, **kwargs):
+        self._loop_callback_agent("on_episode_end", *args, **kwargs)
 
     def on_train_start(self):
         self._loop_callback_agent("on_train_start")
+        notice.info("Starting training...")
 
     def on_train_end(self):
         self._loop_callback_agent("on_train_end")
+        msg = "Training finished!"
+        SlackBot().say(msg)
+        notice.info(msg)
 
     def _on_trainer_init(self, state_shape, action_shape):
         if isinstance(self.agents, list):
@@ -113,10 +113,7 @@ class Trainer(ABC):
     def _loop_callback_agent(self, method_name: str, *args, **kwargs):
         if self.callbacks is not None:
             for callback in self.callbacks:
-                if isinstance(callback, Logger):
-                    getattr(callback, method_name)(*args, **kwargs)
-                else:
-                    getattr(callback, method_name)()
+                getattr(callback, method_name)(*args, **kwargs)
         if isinstance(self.agents, list):
             for agent in self.agents:
                 getattr(agent, method_name)()

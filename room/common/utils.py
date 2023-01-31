@@ -22,8 +22,10 @@ def get_param(
     param_name: Optional[str],
     cfg: Optional[Dict[str, Any]],
     aliases: Optional[Dict[str, Any]] = None,
-    verbose: bool = True,
+    verbose: Optional[bool] = True,
 ):
+    verbose = False if verbose is None else verbose
+
     if value is None:
         try:
             value = cfg[param_name]
@@ -31,7 +33,7 @@ def get_param(
         except KeyError:
             raise KeyError(f"{param_name} is not defined in the config file.")
         except TypeError:
-            raise TypeError("No config file is provided.")
+            notice.warning(f"{param_name}: None. No config file is provided.")
 
     elif isinstance(value, str):
         if aliases is None:
@@ -41,7 +43,7 @@ def get_param(
             except KeyError:
                 raise KeyError(f"No {param_name} is not defined in the config file.")
             except TypeError:
-                raise TypeError("Either config file or aliases should be provided.")
+                notice.warning(f"{param_name}: {value}. Neither config file nor aliases are provided.")
         else:
             notice.debug(f"{param_name}: {value} is loaded from the aliases", render=verbose)
             try:
