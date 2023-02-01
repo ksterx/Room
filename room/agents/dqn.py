@@ -63,6 +63,8 @@ class DQN(Agent):
         q_target = batch["rewards"].squeeze(1) + self.gamma * q_next
         loss = self.criterion(q, q_target)
 
+        # print("loss", loss, "\nq", q, "\nq_target", q_target, "\nq_next", q_next)
+
         loss.backward()
         self.optimizer.step()
 

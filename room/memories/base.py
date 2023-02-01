@@ -55,7 +55,7 @@ class Memory(ABC):
     def is_full(self):
         return len(self.experiences) == self.capacity
 
-    def normalize_batch(self, batch: List[Dict[str, torch.Tensor]]):
+    def sort_by_key(self, batch: List[Dict[str, torch.Tensor]]):
         """Normalize batch of experiences.
 
         Args:
@@ -64,16 +64,10 @@ class Memory(ABC):
         Returns:
             Dict[str, torch.Tensor]: Normalized batch of experiences.
         """
-        b = {}
-        for key in batch[0].keys():
-            b[key] = []
-            for i, exp in enumerate(batch):
-                if isinstance(exp[key], torch.Tensor):
-                    b[key].append(exp[key].squeeze(0).to(self.device))  # Need to send to GPU
-                else:
-                    b[key].append(exp[key])
-        for key, value in b.items():
-            if isinstance(value[0], torch.Tensor):
-                b[key] = torch.stack((value))
 
-        return b
+        # [{key1: value11, key2: value21}, {key1: value12, key2: value22}] -> {key1: [value11, value12], key2: [value21, value22]}
+        batch = {key: [item[key] for item in batch] for key in batch[0].keys()}
+        for key, value in batch.items():
+            if isinstance(value[0], torch.Tensor):
+                batch[key] = torch.stack(value).squeeze(1).to(self.device)
+        return batch

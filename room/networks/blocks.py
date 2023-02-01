@@ -55,10 +55,11 @@ class MLP(nn.Module):
         for i in range(len(layers)):
             if i < len(layers) - 1:
                 self.net.add_module(f"fc{i+1}", nn.Linear(layers[i], layers[i + 1]))
+            if i < len(layers) - 2:
                 self.net.add_module(f"{activation}{i+1}", activation_from_str(activation))
-            elif i == len(layers) - 1 and output_activation is not None:
+            elif i == len(layers) - 2 and output_activation is not None:
                 self.net.add_module(f"{output_activation}{i+1}", activation_from_str(output_activation))
-            elif i == len(layers) - 1:
+            elif i == len(layers) - 2:
                 break
             else:
                 notice.critical(i, len(layers))

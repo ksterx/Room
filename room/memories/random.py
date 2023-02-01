@@ -19,7 +19,7 @@ class RandomMemory(Memory):
     def sample(self, batch_size):
         super().sample(batch_size)
         batch = random.sample(self.experiences, batch_size)
-        return self.normalize_batch(batch)
+        return self.sort_by_key(batch)
 
     def update(self, idx, error):
         pass
