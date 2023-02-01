@@ -20,11 +20,3 @@ class RandomMemory(Memory):
         super().sample(batch_size)
         batch = random.sample(self.experiences, batch_size)
         return self.sort_by_key(batch)
-
-    def update(self, idx, error):
-        pass
-
-    def randomize(self):
-        random_order_experiences = self.experiences.copy()
-        random.shuffle(random_order_experiences)
-        return random_order_experiences

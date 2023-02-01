@@ -2,12 +2,9 @@ from abc import ABC, abstractmethod
 from collections import deque
 from typing import Dict, List, Optional, Union
 
-import gym
-import numpy as np
 import torch
 
 from room import notice
-from room.common.preprocessing import get_space_shape
 from room.common.utils import get_device
 
 
@@ -57,6 +54,7 @@ class Memory(ABC):
 
     def sort_by_key(self, batch: List[Dict[str, torch.Tensor]]):
         """Normalize batch of experiences.
+        [{key1: value11, key2: value21}, {key1: value12, key2: value22}] -> {key1: [value11, value12], key2: [value21, value22]}
 
         Args:
             batch (List[Dict[str, torch.Tensor]]): Batch of experiences.
@@ -65,7 +63,6 @@ class Memory(ABC):
             Dict[str, torch.Tensor]: Normalized batch of experiences.
         """
 
-        # [{key1: value11, key2: value21}, {key1: value12, key2: value22}] -> {key1: [value11, value12], key2: [value21, value22]}
         batch = {key: [item[key] for item in batch] for key in batch[0].keys()}
         for key, value in batch.items():
             if isinstance(value[0], torch.Tensor):

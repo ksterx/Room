@@ -51,7 +51,7 @@ class SimpleTrainer(Trainer):
 
         episode = 0
         total_reward = 0
-        states = self.env.reset()
+        states, info = self.env.reset()
 
         self.on_train_start()
 
@@ -64,6 +64,7 @@ class SimpleTrainer(Trainer):
             with torch.no_grad():
                 actions = torch.vstack([agent.act(state, step=t) for agent, state in zip(self.agents, states)])
             next_states, rewards, terminated, truncated, info = self.env.step(actions)
+
             self.memory.add(
                 {
                     "states": states,
@@ -88,11 +89,11 @@ class SimpleTrainer(Trainer):
 
                     self.on_episode_end(**monitor)
 
-                    states, infos = self.env.reset()
+                    states, _ = self.env.reset()
                     episode += 1
                     total_reward = 0
 
-            if not self.memory.is_full():
+            if len(self.memory) <= self.batch_size:
                 continue
             else:
                 batch = self.memory.sample(batch_size=self.batch_size)
