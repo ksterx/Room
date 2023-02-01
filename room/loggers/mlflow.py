@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 from mlflow.tracking import MlflowClient
@@ -34,7 +35,10 @@ class MLFlowLogger(Logger):
         agent_tag = cfg["run"]
         self.run = self.client.create_run(self.experiment_id, tags={"agent": agent_tag})
         self.run_id = self.run.info.run_id
-        # self.log_hparams(cfg)
+
+        self.local_run_dir = (
+            Path(".") / Path(tracking_uri.lstrip("file:")) / self.experiment_id / self.run_id / "artifacts"
+        ).resolve()
 
     def log_param(self, key, value):
         self.client.log_param(self.run_id, key, value)
@@ -58,3 +62,6 @@ class MLFlowLogger(Logger):
                 continue
 
             self.log_param(k, v)
+
+    def log_artifact(self, local_path, artifact_path=None):
+        self.client.log_artifact(self.run_id, local_path, artifact_path)

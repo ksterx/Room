@@ -8,7 +8,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from room import notice
 from room.agents import DQN
-from room.common.callbacks import MLFlowLogging, ModelCheckpoint
+from room.common.callbacks import MLFlowLogging
 from room.common.utils import flatten_dict
 from room.envs import register_env
 from room.trainers import SimpleTrainer
@@ -34,15 +34,20 @@ def main(omegacfg: DictConfig) -> None:
     with tempfile.TemporaryDirectory() as d:
         artifact_dir = pathlib.Path(d)
         bot = SlackBot()
-        mlf_logging = MLFlowLogging(omegacfg.mlflow_uri, cfg, omegacfg.exp_name)
-        model_checkpoint = ModelCheckpoint(agent=agent, save_dir=artifact_dir)
+        mlf_logging = MLFlowLogging(
+            agent=agent,
+            save_dir=artifact_dir,
+            tracking_uri=omegacfg.mlflow_uri,
+            cfg=cfg,
+            exp_name=omegacfg.exp_name,
+        )
 
         trainer = SimpleTrainer(
             env=env,
             agents=agent,
             memory="random",
             cfg=cfg,
-            callbacks=[mlf_logging, model_checkpoint],
+            callbacks=[mlf_logging],
             **cfg,
         )
 
