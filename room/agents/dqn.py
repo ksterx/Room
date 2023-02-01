@@ -45,8 +45,9 @@ class DQN(Agent):
         self.target_q_net = copy.deepcopy(self.q_net)
 
     def act(self, state: torch.Tensor, step: int = 0) -> torch.Tensor:
-        q = self.q_net(state)
-        action = torch.argmax(q)
+        with torch.no_grad():
+            q = self.q_net(state)
+            action = torch.argmax(q)
 
         # eposilon greedy
         if self.model.training:
@@ -63,8 +64,7 @@ class DQN(Agent):
         q_target = batch["rewards"].squeeze(1) + self.gamma * q_next
         loss = self.criterion(q, q_target)
 
-        # print("loss", loss, "\nq", q, "\nq_target", q_target, "\nq_next", q_next)
-
+        self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
 

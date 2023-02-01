@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from argparse import Namespace
-from typing import Any, Dict, Generator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Generator, List, MutableMapping, Optional, Union
 
 
 def flatten_dict(params: Dict[Any, Any], delimiter: str = "/") -> Dict[str, Any]:
@@ -45,3 +45,19 @@ class Logger(ABC):
     @abstractmethod
     def log_metrics(self, **kwargs):
         pass
+
+
+class MatPlotLogger(Logger):
+    def __init__(self, log_dir: str):
+        super().__init__()
+        self.log_dir = log_dir
+
+    def log_param(self, key, value):
+        raise NotImplementedError
+
+    def log_metric(self, key, value, step: Union[str, int]):
+        raise NotImplementedError
+
+    def log_metrics(self, metris: Dict[str, Any], step: Union[str, int]):
+        for k, v in metris.items():
+            self.log_metric(k, v, step)

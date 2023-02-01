@@ -45,7 +45,7 @@ class MLFlowLogging(MLFlowLogger, Callback):
         pass
 
     def on_episode_end(self, *args, **kwargs):
-        self.log_metrics(kwargs["metrics"], step=kwargs["timestep"])
+        self.log_metrics(kwargs["metrics"], step=kwargs["episode"])
 
     def on_train_start(self):
         pass
