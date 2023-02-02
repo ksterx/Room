@@ -7,7 +7,6 @@ save_video: False
 
 # Training
 timesteps: 50000
-capacity: 10000
 
 # Learning
 batch_size: 32

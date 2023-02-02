@@ -1,3 +1,4 @@
 name: dqn
 model: mlp3
 epsilon: 0.1
+capacity: 10000

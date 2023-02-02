@@ -6,7 +6,8 @@ This is a reinforcement learning library.
 
 ### Prerequisites
 
-- gym < 0.25
+- gym > 0.26
+- Ubuntu 22.04
 
 ### Using PyPI
 
@@ -23,23 +24,21 @@ Coming soon
 ## Usage
 
 - **Train an agent**
-  
+
   ```bash
-  python train.py task=<TASK NAME> [OPTIONS]
+  python experiments/<TASK NAME>/train.py <OPTIONS>
   ```
 
 - **View training progress and results with MLFlow (default: localhost:5000)**
-  
+
   ```bash
   bash dashboard.sh
   ```
-  
-  
 
 ### Example
 
 ```python
-python train.py task=traction dt=30
+python experiments/cartpole/train_dqn.py timesteps=100000 batch_size=32 agent.epsilon=0.1
 ```
 
 ## References
