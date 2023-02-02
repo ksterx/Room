@@ -59,7 +59,9 @@ class SequentialTrainer(Trainer):
 
             # Get action tensor from each agent and stack them
             with torch.no_grad():
-                actions = torch.vstack([agent.act(state) for agent, state in zip(self.agents, states)])
+                actions = torch.vstack(
+                    [agent.act(state) for agent, state in zip(self.agents, states)]
+                )
             next_states, rewards, terminated, truncated, info = self.env.step(actions)
             self.memory.add(
                 {

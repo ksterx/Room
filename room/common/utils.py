@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import torch
 from torch import optim
@@ -26,15 +26,20 @@ def get_param(
 ):
     show = False if show is None else show
 
+    # If the value is None, load the value from the config file.
     if value is None:
         try:
             value = cfg[param_name]
-            notice.debug(f"Loading default {param_name}. It is defined in the config file.", show=show)
+            notice.debug(
+                f"Loading default {param_name}. It is defined in the config file.",
+                show=show,
+            )
         except KeyError:
             raise KeyError(f"{param_name} is not defined in the config file.")
         except TypeError:
             notice.warning(f"{param_name}: None. No config file is provided.")
 
+    # If the value is a string, load the value from the aliases.
     elif isinstance(value, str):
         if aliases is None:
             try:
@@ -43,56 +48,61 @@ def get_param(
             except KeyError:
                 raise KeyError(f"No {param_name} is not defined in the config file.")
             except TypeError:
-                notice.warning(f"{param_name}: {value}. Neither config file nor aliases are provided.")
+                notice.warning(
+                    f"{param_name}: {value}. Neither config file nor aliases are provided."
+                )
         else:
-            notice.debug(f"{param_name}: {value} is loaded from the aliases", show=show)
             try:
                 value = aliases[value]
+                notice.debug(
+                    f"{param_name}: {value} is loaded from the aliases: {aliases}", show=show
+                )
             except KeyError:
                 raise KeyError(f"No {param_name} is not defined in the aliases.")
 
+    # If the value is not None or a string, return the value.
     else:
-        if aliases is None:
-            try:
-                if value == cfg[param_name]:
-                    notice.debug(f"Loading {param_name} same as the config file.", show=show)
-                else:
-                    notice.debug(
-                        f"Loading {param_name} from the function argument instead of the config file.", show=show
-                    )
-            except KeyError:
-                notice.warning(f"No {param_name} is not defined in the config file.")
-        else:
-            if value in aliases.values():
-                notice.debug(f"Loading {param_name} same as the aliases.", show=show)
-            else:
-                notice.warning(f"No {param_name} is not defined in the aliases.")
+        pass
 
     return value
 
 
-def get_device(device: Optional[Union[str, torch.device]]):
-    if device is None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    elif isinstance(device, str):
-        device = torch.device(device)
-    elif isinstance(device, torch.device):
+def get_device(device: Optional[Union[str, int, torch.device]]):
+    if isinstance(device, torch.device):
         pass
     else:
-        raise TypeError(f"Device type {type(device)} is not supported")
+        gpus = torch.cuda.device_count()
+
+        if isinstance(device, str):
+            if device == "cpu":
+                device = torch.device("cpu")
+                notice.info(f"Using CPU. {gpus} GPUs are available.")
+            elif device == "cuda" and gpus == 0:
+                device = torch.device("cpu")
+                notice.warning("Using CPU. No GPU is available.")
+            elif device == "cuda" and gpus > 0:
+                device = torch.device(device)
+                notice.info(f"Using GPU: {torch.cuda.current_device()}.")
+            else:
+                raise ValueError(
+                    f"Device {device} is not found. Available devices are 'cpu' and 'cuda'"
+                )
+
+        elif isinstance(device, int):
+            if device >= gpus:
+                device = torch.device("cpu")
+                notice.warning(f"Using CPU. GPU: {device} is not available.")
+            else:
+                device = torch.device(f"cuda:{device}")
+                notice.info(f"Using GPU: {device}.")
+
+        elif device is None:
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        else:
+            raise TypeError(f"Device type {type(device)} is not supported")
 
     return device
-
-
-def get_optimizer(optimizer: Optional[Union[str, optim.Optimizer]], cfg: Optional[dict] = None):
-    optim_aliases = {
-        "adam": optim.Adam,
-        "rmsprop": optim.RMSprop,
-        "sgd": optim.SGD,
-        "adagrad": optim.Adagrad,
-    }
-    optimizer = get_param(optimizer, "optimizer", cfg, optim_aliases, show=is_debug(cfg))
-    return optimizer
 
 
 def is_debug(cfg):

@@ -36,13 +36,15 @@ class MLFlowLogging(MLFlowLogger, Callback):
 
     EXTENSION = ".ckpt"
 
-    def __init__(self, agent, save_dir, tracking_uri, cfg, exp_name, top_k: int = 1, *args, **kwargs):
+    def __init__(self, tracking_uri, cfg, exp_name, top_k: int = 1, *args, **kwargs):
         super().__init__(tracking_uri=tracking_uri, cfg=cfg, exp_name=exp_name, *args, **kwargs)
         notice.info("You can open the dashboard by `bash dashboard.sh`.")
 
-        self.agent = agent
         self.top_ckpt = None
         self.top_total_reward = -1e10
+
+    def on_agent_init(self, *args, **kwargs):
+        self.create_run(agent_id=kwargs["agent_id"])
 
     def on_timestep_start(self):
         pass

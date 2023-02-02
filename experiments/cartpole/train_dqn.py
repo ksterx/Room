@@ -10,7 +10,7 @@ from room import notice
 from room.agents import DQN
 from room.common.callbacks import MLFlowLogging
 from room.common.utils import flatten_dict
-from room.envs import register_env
+from room.envs import build_env
 from room.trainers import SimpleTrainer
 
 ENV_NAME = "Acrobot-v1"
@@ -29,7 +29,7 @@ def main(omegacfg: DictConfig) -> None:
     cfg = flatten_dict(OmegaConf.to_container(omegacfg, resolve=True))
 
     env = gym.make(ENV_NAME, render_mode=render_mode)
-    env = register_env(env)
+    env = build_env(env)
 
     agent = DQN(model="mlp3", cfg=cfg)
 

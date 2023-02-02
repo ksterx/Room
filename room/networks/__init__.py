@@ -5,4 +5,4 @@ def mlp4(state_shape, action_shape, hidden_dim=64):
     return MLP([state_shape, hidden_dim, hidden_dim, action_shape], activation="relu")
 
 
-registered_models = {"mlp3": mlp4}
+registered_models = {"mlp4": mlp4}

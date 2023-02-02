@@ -1,4 +1,5 @@
 name: dqn
-model: mlp3
+model: mlp4
 epsilon: 0.1
 capacity: 10000
+memory: random

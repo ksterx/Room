@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import torch
 from torch import nn
 
-from ...networks.blocks import MLPBN
+from room.networks.blocks import MLPBN
 
 
 class Policy(nn.Module, ABC):
@@ -31,7 +31,9 @@ class ActorCriticPolicy(Policy):
             self.actor_head = nn.Linear(self.hidden_size, self.action_space.n)
             self.critic_head = nn.Linear(self.hidden_size, 1)
         else:
-            self.actor_net = MLPBN(layers=[obs_space.shape[0], hidden_size, hidden_size, action_space.n])
+            self.actor_net = MLPBN(
+                layers=[obs_space.shape[0], hidden_size, hidden_size, action_space.n]
+            )
             self.critic_net = MLPBN(layers=[obs_space.shape[0], hidden_size, hidden_size, 1])
 
     def forward(self, obs):

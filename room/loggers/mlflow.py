@@ -16,6 +16,7 @@ class MLFlowLogger(Logger):
         exp_name: Optional[str] = None,
     ):
         super().__init__()
+        self.tracking_uri = tracking_uri
         self.client = MlflowClient(tracking_uri)
         self.cfg = cfg
 
@@ -31,12 +32,15 @@ class MLFlowLogger(Logger):
         else:
             self.experiment_id = self.experiment.experiment_id
 
-        # convert hydra config to dict
+    def create_run(self, agent_id: int):
         self.run = self.client.create_run(self.experiment_id)
         self.run_id = self.run.info.run_id
-
         self.local_run_dir = (
-            Path(".") / Path(tracking_uri.lstrip("file:")) / self.experiment_id / self.run_id / "artifacts"
+            Path(".")
+            / Path(self.tracking_uri.lstrip("file:"))
+            / self.experiment_id
+            / self.run_id
+            / "artifacts"
         ).resolve()
 
     def log_param(self, key, value):
@@ -57,7 +61,9 @@ class MLFlowLogger(Logger):
 
         for k, v in params.items():
             if len(str(v)) > 250:
-                notice.warning(f"Mlflow only allows parameters with up to 250 characters. Discard {k}={v}")
+                notice.warning(
+                    f"Mlflow only allows parameters with up to 250 characters. Discard {k}={v}"
+                )
                 continue
 
             self.log_param(k, v)

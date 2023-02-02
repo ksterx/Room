@@ -58,7 +58,9 @@ class MLP(nn.Module):
             if i < len(layers) - 2:
                 self.net.add_module(f"{activation}{i+1}", activation_from_str(activation))
             elif i == len(layers) - 2 and output_activation is not None:
-                self.net.add_module(f"{output_activation}{i+1}", activation_from_str(output_activation))
+                self.net.add_module(
+                    f"{output_activation}{i+1}", activation_from_str(output_activation)
+                )
             elif i == len(layers) - 2:
                 break
             else:
@@ -100,7 +102,9 @@ class MLPBN(nn.Module):
                 self.net.add_module(f"bn{i+1}", nn.BatchNorm1d(layers[i + 1]))
                 self.net.add_module(f"{activation}{i+1}", activation_from_str(activation))
             elif i == len(layers) - 1 and output_activation is not None:
-                self.net.add_module(f"{output_activation}{i+1}", activation_from_str(output_activation))
+                self.net.add_module(
+                    f"{output_activation}{i+1}", activation_from_str(output_activation)
+                )
             else:
                 raise ValueError("Unexpected error. e.g. Layers list must be of length 3 or more")
 

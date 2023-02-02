@@ -1,7 +1,8 @@
 exp_name: &exp_name cartpole
 mlflow_uri: file:./experiments/results
 agent_name: &agent dqn
-debug: False
+num_agents: 2
+debug: True
 render: False
 save_video: False
 

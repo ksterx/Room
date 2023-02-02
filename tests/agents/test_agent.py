@@ -20,12 +20,22 @@ from room.trainers.base import Trainer
 
 env = gym.make("CartPole-v1", render_mode="human")
 env = GymEnvWrapper(env)
-agent = DQN(model=[], optimizer=torch.optim.Adam, device="cuda", cfg={}, epsilon=0.1, gamma=0.01, lr=1e-3)
+agent = DQN(
+    model=[], optimizer=torch.optim.Adam, device="cuda", cfg={}, epsilon=0.1, gamma=0.01, lr=1e-3
+)
 memory = RandomMemory(capacity=10)
 
 
 def test_dqn():
-    DQN(model=[], optimizer=torch.optim.Adam, device="cuda", cfg={}, epsilon=0.1, gamma=0.01, lr=1e-3)
+    DQN(
+        model=[],
+        optimizer=torch.optim.Adam,
+        device="cuda",
+        cfg={},
+        epsilon=0.1,
+        gamma=0.01,
+        lr=1e-3,
+    )
 
 
 def test_train():

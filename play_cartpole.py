@@ -5,7 +5,7 @@ from tkinter.filedialog import askopenfilename
 import gym
 
 from room.agents import DQN
-from room.envs import register_env
+from room.envs import build_env
 
 INITIALDIR = "/Users/ksterx/Library/CloudStorage/GoogleDrive-ishikawa-kosuke259@g.ecc.u-tokyo.ac.jp/My Drive/Development/Python Projects/Room/experiments/results"
 
@@ -17,7 +17,7 @@ args = parser.parse_args()
 env = gym.make("CartPole-v1", render_mode="human")
 state_shape = env.observation_space.shape[0]
 action_shape = env.action_space.n
-env = register_env(env)
+env = build_env(env)
 
 
 # Copy the recent weight file as sample_weight.pt

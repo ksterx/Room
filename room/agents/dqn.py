@@ -1,6 +1,7 @@
 import copy
 from typing import Any, Dict, Optional, Union
 
+import ray
 import torch
 from torch import nn
 
@@ -8,17 +9,20 @@ from room.agents import Agent
 from room.common.aliases import registered_criteria
 from room.common.typing import CfgType
 from room.common.utils import get_param, is_debug
+from room.envs.wrappers import EnvWrapper
 from room.loggers import Logger
 
 
+@ray.remote
 class DQN(Agent):
     def __init__(
         self,
+        env: Union[str, EnvWrapper],
         model: Union[Any, str],
         optimizer: Union[torch.optim.Optimizer, str] = None,
         device: Optional[Union[str, torch.device]] = None,
+        id: int = 0,
         cfg: Optional[CfgType] = None,
-        logger: Optional[Logger] = None,
         lr: Optional[float] = None,
         criterion: Optional[Union[str, nn.Module]] = nn.HuberLoss,
         epsilon: Optional[float] = None,
@@ -27,20 +31,22 @@ class DQN(Agent):
         **kwargs,
     ):
         super().__init__(
+            env=env,
             model=model,
             optimizer=optimizer,
             device=device,
+            id=id,
             cfg=cfg,
-            logger=logger,
             lr=lr,
+            *args,
+            **kwargs,
         )
 
-        self.criterion = get_param(criterion, "criterion", cfg, registered_criteria, show=is_debug(cfg))()
+        self.criterion = get_param(
+            criterion, "criterion", cfg, registered_criteria, show=is_debug(cfg)
+        )()
         self.epsilon = get_param(epsilon, "epsilon", cfg, show=is_debug(cfg))
         self.gamma = get_param(gamma, "gamma", cfg, show=is_debug(cfg))
-
-    def initialize(self, state_shape: Optional[int] = None, action_shape: Optional[int] = None, training: bool = True):
-        super().initialize(state_shape=state_shape, action_shape=action_shape, training=training)
         self.q_net = self.model
         self.target_q_net = copy.deepcopy(self.q_net)
 
