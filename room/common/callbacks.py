@@ -45,7 +45,7 @@ class MLFlowLogging(MLFlowLogger, Callback):
         self.top_total_reward = -1e10
 
     def on_timestep_start(self):
-        self.log_hparams(self.cfg)
+        pass
 
     def on_timestep_end(self):
         pass
@@ -58,7 +58,7 @@ class MLFlowLogging(MLFlowLogger, Callback):
         self._save_ckpt(*args, **kwargs)
 
     def on_train_start(self):
-        pass
+        self.log_hparams(self.cfg)
 
     def on_train_end(self):
         pass
@@ -78,4 +78,3 @@ class MLFlowLogging(MLFlowLogger, Callback):
             for fn in glob.glob(str(self.local_run_dir / f"best_*{self.EXTENSION}")):
                 os.remove(fn)
             self.agent.save(ckpt=tmp_ckpt, path=best_ckpt_path)
-            print(best_ckpt_path)

@@ -1,6 +1,3 @@
 name: dqn
-lr: 1e-4
-epsilon: 0.1
-gamma: 0.99
-optimizer: adam
 model: mlp3
+epsilon: 0.1

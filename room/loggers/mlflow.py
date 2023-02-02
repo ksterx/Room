@@ -32,8 +32,7 @@ class MLFlowLogger(Logger):
             self.experiment_id = self.experiment.experiment_id
 
         # convert hydra config to dict
-        agent_tag = cfg["run"]
-        self.run = self.client.create_run(self.experiment_id, tags={"agent": agent_tag})
+        self.run = self.client.create_run(self.experiment_id)
         self.run_id = self.run.info.run_id
 
         self.local_run_dir = (

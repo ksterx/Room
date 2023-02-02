@@ -62,7 +62,9 @@ class SimpleTrainer(Trainer):
 
             # Get action tensor from each agent and stack them
             with torch.no_grad():
-                actions = torch.vstack([agent.act(state, step=t) for agent, state in zip(self.agents, states)])
+                actions = torch.vstack([agent.act(state, step=t) for agent, state in zip(self.agents, states)]).to(
+                    self.device
+                )
             next_states, rewards, terminated, truncated, info = self.env.step(actions)
 
             self.memory.add(

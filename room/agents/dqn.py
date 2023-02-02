@@ -7,7 +7,7 @@ from torch import nn
 from room.agents import Agent
 from room.common.aliases import registered_criteria
 from room.common.typing import CfgType
-from room.common.utils import get_param
+from room.common.utils import get_param, is_debug
 from room.loggers import Logger
 
 
@@ -17,7 +17,7 @@ class DQN(Agent):
         model: Union[Any, str],
         optimizer: Union[torch.optim.Optimizer, str] = None,
         device: Optional[Union[str, torch.device]] = None,
-        cfg: CfgType = None,
+        cfg: Optional[CfgType] = None,
         logger: Optional[Logger] = None,
         lr: Optional[float] = None,
         criterion: Optional[Union[str, nn.Module]] = nn.HuberLoss,
@@ -35,9 +35,9 @@ class DQN(Agent):
             lr=lr,
         )
 
-        self.criterion = get_param(criterion, "criterion", cfg, registered_criteria)()
-        self.epsilon = get_param(epsilon, "epsilon", cfg)
-        self.gamma = get_param(gamma, "gamma", cfg)
+        self.criterion = get_param(criterion, "criterion", cfg, registered_criteria, show=is_debug(cfg))()
+        self.epsilon = get_param(epsilon, "epsilon", cfg, show=is_debug(cfg))
+        self.gamma = get_param(gamma, "gamma", cfg, show=is_debug(cfg))
 
     def initialize(self, state_shape: Optional[int] = None, action_shape: Optional[int] = None, training: bool = True):
         super().initialize(state_shape=state_shape, action_shape=action_shape, training=training)

@@ -10,7 +10,7 @@ from torch import optim
 from room import notice
 from room.agents import Agent
 from room.common.callbacks import Callback
-from room.common.utils import get_device, get_param
+from room.common.utils import get_device, get_param, is_debug
 from room.envs.utils import get_action_shape, get_obs_shape
 from room.envs.wrappers import EnvWrapper
 from room.loggers import Logger
@@ -43,14 +43,14 @@ class Trainer(ABC):
         """
         self.env = env
         self.agents = agents if isinstance(agents, list) else [agents]
-        self.batch_size = get_param(batch_size, "batch_size", cfg)
+        self.batch_size = get_param(batch_size, "batch_size", cfg, show=is_debug(cfg))
         self.optimizer = optimizer
         self.device = get_device(device)
         self.cfg = cfg
         self.callbacks = callbacks
         self.logger = logger
-        self.timesteps = get_param(timesteps, "timesteps", cfg)
-        self.memory = get_param(memory, "memory", cfg, registered_memories)  # TODO: Vecenv
+        self.timesteps = get_param(timesteps, "timesteps", cfg, show=is_debug(cfg))
+        self.memory = get_param(memory, "memory", cfg, registered_memories, show=is_debug(cfg))  # TODO: Vecenv
         if isinstance(memory, str):
             self.memory = self.memory(capacity=kwargs["capacity"], device=self.device)
 

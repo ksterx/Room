@@ -9,7 +9,7 @@ from omegaconf import DictConfig
 
 from room import notice
 from room.agents.policies import Policy, policies
-from room.common.utils import get_device, get_optimizer, get_param
+from room.common.utils import get_device, get_optimizer, get_param, is_debug
 from room.envs import register_env
 from room.envs.wrappers import EnvWrapper
 from room.memories.base import Memory
@@ -28,7 +28,8 @@ class Agent(ABC):
         *args,
         **kwargs,
     ):
-        self.model = get_param(model, "model", cfg)
+
+        self.model = get_param(model, "model", cfg, show=is_debug(cfg))
         self.optimizer = optimizer
         self.device = get_device(device)
         self.cfg = cfg
@@ -105,7 +106,7 @@ class Agent(ABC):
         pass
 
     def configure_optimizer(self, optimizer: Union[str, torch.optim.Optimizer], lr: Optional[float] = None):
-        lr = get_param(lr, "lr", self.cfg)
+        lr = get_param(lr, "lr", self.cfg, show=is_debug(self.cfg))
         self.optimizer = get_optimizer(optimizer, self.cfg)(self.model.parameters(), lr=lr)
 
     def _build_registered_model(self, model_name, state_shape, action_shape):

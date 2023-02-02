@@ -54,7 +54,8 @@ class Memory(ABC):
 
     def sort_by_key(self, batch: List[Dict[str, torch.Tensor]]):
         """Normalize batch of experiences.
-        [{key1: value11, key2: value21}, {key1: value12, key2: value22}] -> {key1: [value11, value12], key2: [value21, value22]}
+        [{key1: value11, key2: value21}, {key1: value12, key2: value22}]
+            -> {key1: [value11, value12], key2: [value21, value22]}
 
         Args:
             batch (List[Dict[str, torch.Tensor]]): Batch of experiences.
@@ -66,5 +67,5 @@ class Memory(ABC):
         batch = {key: [item[key] for item in batch] for key in batch[0].keys()}
         for key, value in batch.items():
             if isinstance(value[0], torch.Tensor):
-                batch[key] = torch.stack(value).squeeze(1).to(self.device)
+                batch[key] = torch.stack(value).squeeze(1)
         return batch
