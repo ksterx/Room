@@ -45,7 +45,7 @@ class Agent(ABC):
             self.configure_optimizer(self.optimizer, lr=self.lr)
 
     @abstractmethod
-    def act(self, obss):
+    def act(self):
         pass
 
     @abstractmethod

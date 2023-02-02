@@ -13,6 +13,8 @@ from room.common.utils import flatten_dict
 from room.envs import register_env
 from room.trainers import SimpleTrainer
 
+ENV_NAME = "Acrobot-v1"
+
 
 @hydra.main(config_path="../config", config_name="config", version_base=None)
 def main(omegacfg: DictConfig) -> None:
@@ -26,7 +28,7 @@ def main(omegacfg: DictConfig) -> None:
 
     cfg = flatten_dict(OmegaConf.to_container(omegacfg, resolve=True))
 
-    env = gym.make("CartPole-v1", render_mode=render_mode)
+    env = gym.make(ENV_NAME, render_mode=render_mode)
     env = register_env(env)
 
     agent = DQN(model="mlp3", cfg=cfg)
@@ -61,7 +63,7 @@ def main(omegacfg: DictConfig) -> None:
         else:
             render_mode = "human"
         agent.play(
-            gym.make("CartPole-v1", render_mode=render_mode),
+            gym.make(ENV_NAME, render_mode=render_mode),
             num_eps=5,
             save_video=omegacfg.save_video,
             save_dir=artifact_dir,
