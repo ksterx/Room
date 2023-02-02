@@ -1,5 +1,5 @@
 import copy
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import ray
 import torch
@@ -7,6 +7,7 @@ from torch import nn
 
 from room.agents import Agent
 from room.common.aliases import registered_criteria
+from room.common.callbacks import Callback
 from room.common.typing import CfgType
 from room.common.utils import get_param, is_debug
 from room.envs.wrappers import EnvWrapper
@@ -19,12 +20,14 @@ class DQN(Agent):
         self,
         env: Union[str, EnvWrapper],
         model: Union[Any, str],
+        lr: Optional[float] = None,
         optimizer: Union[torch.optim.Optimizer, str] = None,
+        criterion: Optional[Union[str, nn.Module]] = None,
         device: Optional[Union[str, torch.device]] = None,
         id: int = 0,
         cfg: Optional[CfgType] = None,
-        lr: Optional[float] = None,
-        criterion: Optional[Union[str, nn.Module]] = nn.HuberLoss,
+        logger: Optional[Logger] = None,
+        callbacks: Optional[Union[Callback, List[Callback]]] = None,
         epsilon: Optional[float] = None,
         gamma: Optional[float] = None,
         *args,
@@ -33,11 +36,14 @@ class DQN(Agent):
         super().__init__(
             env=env,
             model=model,
+            lr=lr,
             optimizer=optimizer,
+            criterion=criterion,
             device=device,
             id=id,
             cfg=cfg,
-            lr=lr,
+            logger=logger,
+            callbacks=callbacks,
             *args,
             **kwargs,
         )
@@ -73,6 +79,22 @@ class DQN(Agent):
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
+    def step(self, state, is_training: bool, timestep=0):
+        self.q_net.training = is_training
+        action = self.act(state, timestep)  # TODO: send gpu?
+        next_state, reward, terminated, truncated, info = self.env.step(action)
+        experience = {
+            "state": state,
+            "action": action,
+            "reward": reward,
+            "next_state": next_state,
+            "terminated": terminated,
+            "truncated": truncated,
+            "info": info,
+        }
+        self.total_reward += reward.mean().item()  # TODO: check if this is correct
+        return experience
 
     def make_ckpt(self, timestep, total_reward):
         return {

@@ -13,7 +13,7 @@ class RandomMemory(Memory):
     def __str__(self):
         return f"{self.__class__.__name__} (capacity: {self.capacity})"
 
-    def add(self, experience, *args):
+    def add(self, *experience):
         self.experiences.append(experience)
 
     def sample(self, batch_size):

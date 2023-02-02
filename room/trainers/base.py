@@ -30,6 +30,7 @@ class Trainer(ABC):
         timesteps: Optional[int] = None,
         device: Optional[Union[str, int, List[int], torch.device, List[torch.device]]] = None,
         cfg: Optional[dict] = None,
+        logger: Optional[Logger] = None,
         callbacks: Union[Callback, List[Callback]] = None,
         *args,
         **kwargs,
@@ -54,14 +55,14 @@ class Trainer(ABC):
         self.device = device
         self.cfg = cfg
         self.callbacks = callbacks
-
+        self.loggers = [
+            logger(agent_id=i, cfg=cfg, exp_name=self.env_name) for i in range(self.num_agents)
+        ]
         self.agents = self._get_agents()
 
         self._on_trainer_init()
 
         for i, agent in enumerate(self.agents):
-            mo = ray.get(agent.get_model.remote())
-            print(f"\nAgent {i}: \n{ray.get(agent.get_model.remote())}")
             notice.info(f"\nAgent {i}: \n{ray.get(agent.get_model.remote())}")
 
     @abstractmethod
@@ -103,7 +104,7 @@ class Trainer(ABC):
                 getattr(callback, method_name)(*args, **kwargs)
         if isinstance(self.agents, list):
             for agent in self.agents:
-                getattr(agent, method_name)()
+                getattr(agent, method_name).remote()
         elif isinstance(self.agents, Agent):
             getattr(self.agents, method_name)()
 
@@ -133,6 +134,7 @@ class Trainer(ABC):
                     device=self.device,
                     id=i,
                     cfg=self.cfg,
+                    logger=self.loggers[i],
                     callbacks=self.callbacks,
                     **kwargs,
                 )

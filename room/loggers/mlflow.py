@@ -5,25 +5,31 @@ from mlflow.tracking import MlflowClient
 from omegaconf import DictConfig, OmegaConf
 
 from room import notice
+from room.common.utils import get_param, is_debug
 from room.loggers.base import Logger, flatten_dict
 
 
 class MLFlowLogger(Logger):
+
+    EXTENSION = ".ckpt"
+
     def __init__(
         self,
-        tracking_uri: str,
+        agent_id: int,
         cfg: Union[DictConfig, dict],
         exp_name: Optional[str] = None,
     ):
         super().__init__()
-        self.tracking_uri = tracking_uri
-        self.client = MlflowClient(tracking_uri)
+
+        self.id = agent_id
+        self.tracking_uri = cfg["mlflow_uri"]
+        self.client = MlflowClient(self.tracking_uri)
         self.cfg = cfg
 
         if cfg["debug"]:
             exp_name = "Debug"
         else:
-            exp_name = cfg["exp_name"]
+            exp_name = get_param(exp_name, "exp_name", cfg, show=is_debug(cfg))
 
         self.experiment = self.client.get_experiment_by_name(exp_name)
         if self.experiment is None:
@@ -32,7 +38,6 @@ class MLFlowLogger(Logger):
         else:
             self.experiment_id = self.experiment.experiment_id
 
-    def create_run(self, agent_id: int):
         self.run = self.client.create_run(self.experiment_id)
         self.run_id = self.run.info.run_id
         self.local_run_dir = (

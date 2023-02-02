@@ -16,3 +16,5 @@
 # `SequentialTrainer(Trainer)`
 
 # `ParallelTrainer(Trainer)`
+
+# `OffPolicyTrainer(Trainer)`

@@ -30,14 +30,12 @@ def get_param(
     if value is None:
         try:
             value = cfg[param_name]
-            notice.debug(
-                f"Loading default {param_name}. It is defined in the config file.",
-                show=show,
-            )
+            if aliases is not None:
+                value = aliases[value]
         except KeyError:
             raise KeyError(f"{param_name} is not defined in the config file.")
         except TypeError:
-            notice.warning(f"{param_name}: None. No config file is provided.")
+            raise TypeError(f"{param_name}: None. No config file is provided.")
 
     # If the value is a string, load the value from the aliases.
     elif isinstance(value, str):

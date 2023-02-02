@@ -82,7 +82,7 @@ class SimpleTrainer(Trainer):
 
             self.on_timestep_end()
 
-            states = next_states
+            states = next_states  # TODO: !!!!!!!!!!!!!!!!!!!!!!!!FIX HERE !!!!!!!!!!!!!!!!!!!!!!
 
             with torch.no_grad():
                 if terminated.any() or truncated.any():

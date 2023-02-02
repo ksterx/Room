@@ -33,10 +33,17 @@ class OffPolicyTrainer(Trainer):
         timesteps: Optional[int] = None,
         device: Optional[Union[str, int, List[int], torch.device, List[torch.device]]] = None,
         cfg: Optional[dict] = None,
+        logger: Optional[Logger] = None,
         callbacks: Union[Callback, List[Callback]] = None,
         *args,
         **kwargs,
     ) -> None:
+        """Off-policy trainer.
+
+        Args:
+            memory: Shared memory for all agents to store experiences.
+            capacity: Capacity of the shared memory.
+        """
 
         super().__init__(
             env_name=env_name,
@@ -48,12 +55,13 @@ class OffPolicyTrainer(Trainer):
             timesteps=timesteps,
             device=device,
             cfg=cfg,
+            logger=logger,
             callbacks=callbacks,
             *args,
             **kwargs,
         )
 
-        self.memory = get_param(memory, "memory", cfg, registered_memories, show=is_debug(cfg))
+        self.memory = get_param(memory, "prior", cfg, registered_memories, show=is_debug(cfg))
         self.capacity = get_param(capacity, "capacity", cfg, show=is_debug(cfg))
         if isinstance(memory, str):
             self.memory = self.memory(capacity=self.capacity, device=self.device)
@@ -62,13 +70,39 @@ class OffPolicyTrainer(Trainer):
 
         self.on_train_start()
 
-        states = ray.get([agent.reset_env.remote() for agent in self.agents])
+        states = ray.get(
+            [agent.reset_env.remote()[0] for agent in self.agents]
+        )  # [0]: state, [1]: info
 
         for t in trange(self.timesteps):
 
-            self.on_timestep_start(t)
+            self.on_timestep_start()
 
-            actions = ray.get([agent.act.remote(states) for agent in self.agents])
+            experiences = ray.get(
+                [
+                    agent.step.remote(state, is_training=True, timestep=t)
+                    for agent, state in zip(self.agents, states)
+                ]
+            )
+            self.memory.add(*experiences)
+
+            states = ray.get(
+                [
+                    agent.get_next_state.remote(
+                        experiences[i]["next_state"],
+                        experiences[i]["terminated"],
+                        experiences[i]["truncated"],
+                    )
+                    for i, agent in enumerate(self.agents)
+                ]
+            )
+
+            self.on_timestep_end()
+
+            if len(self.memory) >= self.batch_size:
+                self.on_batch_start()
+                self.update()
+                self.on_batch_end()
 
     def eval(self):
         pass

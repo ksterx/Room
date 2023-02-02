@@ -8,14 +8,12 @@ from room.loggers import MLFlowLogger
 from room.trainers import OffPolicyTrainer
 
 
-@hydra.main(config_path="../config", config_name="config", version_base=None)
+@hydra.main(config_path="config", config_name="config", version_base=None)
 def main(omegacfg: DictConfig) -> None:
 
     ray.init(local_mode=omegacfg.debug)
 
-    cfg = flatten_dict(OmegaConf.to_container(omegacfg, resolve=True))
-
-    trainer = OffPolicyTrainer(cfg=cfg, logger=MLFlowLogger)
+    trainer = OffPolicyTrainer(device=0, logger=MLFlowLogger)
     trainer.train()
     trainer.eval()
 
